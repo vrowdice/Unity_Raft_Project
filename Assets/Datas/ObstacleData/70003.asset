@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffdd3bd6fe188d549b91241b8f0200f8, type: 3}
+  m_Name: 70003
+  m_EditorClassIdentifier: 
+  m_code: 70003
+  m_name: boom
+  m_sprite: {fileID: 21300000, guid: 1bb69cd91685d9248a58b144052746f3, type: 3}
+  m_explain: 
+  m_destroyRaftPos:
+  - {x: 0, y: 1}
+  - {x: -1, y: 0}
+  - {x: 0, y: 0}
+  - {x: 1, y: 0}
+  - {x: 0, y: -1}
+  m_damage: 0
+  m_generateWeight: 0
+  m_weightChange: 0
