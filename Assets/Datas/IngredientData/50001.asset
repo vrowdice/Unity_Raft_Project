@@ -18,3 +18,4 @@ MonoBehaviour:
   m_explain: 
   m_generateWeight: 100
   m_weightChange: -2
+  m_startAmount: 50

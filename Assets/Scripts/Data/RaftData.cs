@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "RaftData", menuName = "New Raft Data", order = 1)]
 public class RaftData : ScriptableObject
 {
+    [Header("Information")]
     /// <summary>
     /// raft code
     /// 10001 = woodRaft
@@ -35,6 +36,7 @@ public class RaftData : ScriptableObject
     [TextArea]
     public string m_explain = string.Empty;
 
+    [Header("Setting")]
     /// <summary>
     /// raft hp9
     /// 10001 = 1
@@ -43,4 +45,16 @@ public class RaftData : ScriptableObject
     /// 10004 = 4
     /// </summary>
     public int m_hp = 0;
+
+    /// <summary>
+    /// the ingredient code
+    /// it needed to build or upgrade
+    /// </summary>
+    public List<int> m_needIngredientCode = new List<int>();
+
+    /// <summary>
+    /// the ingredient amount
+    /// it needed to build or upgrade
+    /// </summary>
+    public List<int> m_needIngredientAmount = new List<int>();
 }

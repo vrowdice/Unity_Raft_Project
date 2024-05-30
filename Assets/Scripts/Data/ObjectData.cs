@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ObjectData", menuName = "New Object Data", order = 1)]
 public class ObjectData : ScriptableObject
 {
+    [Header("Information")]
     /// <summary>
     /// raft code
     /// 20001 = woodLuncher

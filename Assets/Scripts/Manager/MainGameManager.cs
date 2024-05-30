@@ -1,6 +1,54 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// the ingredient count data
+/// </summary>
+public class IngredientCountData
+{
+    /// <summary>
+    /// code
+    /// </summary>
+    public int m_code = 0;
+
+    /// <summary>
+    /// amount
+    /// </summary>
+    public int m_amount = 0;
+
+    /// <summary>
+    /// count text
+    /// </summary>
+    public Text m_text = null;
+
+    /// <summary>
+    /// set this ingredient amount
+    /// </summary>
+    /// <param name="argAmount">amount</param>
+    /// <returns>amount to add is not could be = false, else true</returns>
+    public bool SetAmount(int argAmount)
+    {
+        if(m_amount + argAmount < 0)
+        {
+            GameManager.Instance.Alert("재료가 부족합니다");
+            return false;
+        }
+
+        m_amount += argAmount;
+        SetTextToAmount();
+        return true;
+    }
+
+    /// <summary>
+    /// set ingredient image text to this amount
+    /// </summary>
+    public void SetTextToAmount()
+    {
+        m_text.text = m_amount.ToString();
+    }
+}
 
 public class MainGameManager : MonoBehaviour
 {
@@ -85,6 +133,31 @@ public class MainGameManager : MonoBehaviour
     /// </summary>
     PlayerController m_playerController = null;
 
+    [Header("Ingredient")]
+    /// <summary>
+    /// ingredient image
+    /// </summary>
+    [SerializeField]
+    GameObject m_ingredientImage = null;
+
+    /// <summary>
+    /// ingredient scrollview content
+    /// </summary>
+    [SerializeField]
+    GameObject m_ingredientScrollViewContent = null;
+
+    /// <summary>
+    /// ingredient count dictionaty
+    /// </summary>
+    Dictionary<int, IngredientCountData> m_ingredientCountDic = new Dictionary<int, IngredientCountData>();
+
+    [Header("Above Object")]
+    /// <summary>
+    /// above object scrollview content
+    /// </summary>
+    [SerializeField]
+    GameObject m_aboveObjectScrollViewContent = null;
+
     private void Awake()
     {
         m_raftRoot = GameObject.Find("RaftRoot");
@@ -99,6 +172,8 @@ public class MainGameManager : MonoBehaviour
         ResetRaft();
 
         m_playerController.SetPlayerPosition(m_playerfirstXIndex, m_playerfirstYIndex);
+
+        SetIngredientScrollView();
     }
 
     /// <summary>
@@ -106,31 +181,45 @@ public class MainGameManager : MonoBehaviour
     /// </summary>
     /// <param name="argRaftXIndex">raft x index</param>
     /// <param name="argRaftYIndex">raft y index</param>
-    public void UpgradeRaft(int argRaftXIndex, int argRaftYIndex)
+    public void BuildRaft(int argRaftXIndex, int argRaftYIndex)
     {
         Raft _raft = GetRaft(argRaftXIndex, argRaftYIndex);
-        if (_raft.Code < 10000 || _raft == null)
+
+        if (_raft == null)
         {
             return;
         }
 
-        int _nextRaftCode = _raft.Code + 1;
+        int _codeToChange = 10001;
+        if (_raft.Code >= 10001)
+        {
+            _codeToChange = _raft.Code + 1;
+        }
+        RaftData _data = GameManager.Instance.GetRaftData(_codeToChange);
+        if(_data == null ||
+            _data.m_needIngredientCode.Count != _data.m_needIngredientAmount.Count)
+        {
+            return;
+        }
 
-        //this part is only can use earyler test version
-        if (_nextRaftCode == 10002)
+        for(int i = 0; i < _data.m_needIngredientCode.Count; i++)
+        {
+            if (!m_ingredientCountDic[_data.m_needIngredientCode[i]].SetAmount(_data.m_needIngredientAmount[i]))
+            {
+                return;
+            }
+        }
+
+        if (_codeToChange == 10002)
         {
             _raft.ViewSprite.color = Color.gray;
         }
-        else if (_nextRaftCode == 10003)
+        else if (_codeToChange == 10003)
         {
             _raft.ViewSprite.color = Color.yellow;
         }
-        else
-        {
-            return;
-        }
-
-        _raft.SetRaftState(_nextRaftCode, _raft.AboveObject.Code);
+        
+        _raft.SetRaftState(_codeToChange, _raft.AboveObject.Code);
     }
 
     /// <summary>
@@ -158,6 +247,7 @@ public class MainGameManager : MonoBehaviour
     {
         m_raftBlockData = new Raft[m_maxRaftXSize, m_maxRaftYSize];
 
+        //first raft setting
         bool[,] _firstRaft = new bool[m_maxRaftXSize, m_maxRaftYSize];
         for (int i = m_startRaftXSize / 2; i < m_startRaftXSize + m_startRaftXSize / 2; i++)
         {
@@ -167,6 +257,7 @@ public class MainGameManager : MonoBehaviour
             }
         }
 
+        //raft generate
         for (int i = 0; i < m_maxRaftYSize; i++)
         {
             for (int o = 0; o < m_maxRaftXSize; o++)
@@ -188,16 +279,46 @@ public class MainGameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// if get ingredient
+    /// </summary>
+    /// <param name="argCode">ingredient code</param>
+    /// <param name="argAmount">amount</param>
+    public void GetIngredient(int argCode, int argAmount)
+    {
+        m_ingredientCountDic[argCode].m_amount += argAmount;
+        m_ingredientCountDic[argCode].SetTextToAmount();
+    }
+
+    /// <summary>
+    /// ingredient scroll view setting
+    /// </summary>
+    void SetIngredientScrollView()
+    {
+        foreach (KeyValuePair<int, IngredientData> val in GameManager.Instance.IngredientDic)
+        {
+            IngredientCountData _data = new IngredientCountData();
+            _data.m_code = val.Key;
+            _data.m_amount = val.Value.m_startAmount;
+
+            GameObject _object = Instantiate(m_ingredientImage, m_ingredientScrollViewContent.transform);
+            _object.GetComponent<Image>().sprite = val.Value.m_sprite;
+
+            _data.m_text = _object.GetComponentInChildren<Text>();
+            _data.SetTextToAmount();
+
+            m_ingredientCountDic.Add(val.Key, _data);
+        }
+    }
+
     public GameObject Canvas
     {
         get { return m_canvas; }
     }
-
     public GameObject RaftSlider
     {
         get { return m_raftSliderObject; }
     }
-
     public bool IsGame
     {
         get { return m_isGame; }

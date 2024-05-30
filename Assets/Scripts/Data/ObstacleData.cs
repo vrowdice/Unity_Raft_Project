@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ObstacleData", menuName = "New Obstacle Data", order = 1)]
 public class ObstacleData : ScriptableObject
 {
+    [Header("Information")]
     /// <summary>
     /// obstacle code
     /// 70001 = rock
@@ -29,6 +30,7 @@ public class ObstacleData : ScriptableObject
     [TextArea]
     public string m_explain = string.Empty;
 
+    [Header("Setting")]
     /// <summary>
     /// destroy raft position
     /// the standard is the raft that crashed into it.

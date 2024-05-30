@@ -72,4 +72,9 @@ public class Ingredient : MonoBehaviour
 
         m_viewSprite.sprite = GameManager.Instance.GetIngredientData(m_code).m_sprite;
     }
+
+    public int Code
+    {
+        get { return m_code; }
+    }
 }

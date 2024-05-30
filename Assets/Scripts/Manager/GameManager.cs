@@ -10,6 +10,17 @@ public class GameManager : MonoBehaviour
     static GameManager g_gameManager;
 
     /// <summary>
+    /// canvas
+    /// </summary>
+    Canvas m_canvas = null;
+
+    /// <summary>
+    /// alert object
+    /// </summary>
+    [SerializeField]
+    GameObject m_alertObject = null;
+
+    /// <summary>
     /// raft data to add
     /// </summary>
     [SerializeField]
@@ -64,7 +75,14 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        try
+        {
+            m_canvas = GameObject.Find("Canvas").GetComponent<Canvas>();
+        }
+        catch
+        {
+            Debug.LogError("Canvas is null");
+        }
     }
 
     /// <summary>
@@ -133,6 +151,14 @@ public class GameManager : MonoBehaviour
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// play alert animation
+    /// </summary>
+    public void Alert(string argAlertStr)
+    {
+        Instantiate(m_alertObject, m_canvas.transform).GetComponent<AlertPanel>().Alert(argAlertStr);
     }
 
     /// <summary>

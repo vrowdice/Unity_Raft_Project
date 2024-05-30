@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "IngredientData", menuName = "New Ingredient Data", order = 1)]
 public class IngredientData : ScriptableObject
 {
+    [Header("Information")]
     /// <summary>
     /// ingredient code
     /// 50001 = branch
@@ -30,6 +31,7 @@ public class IngredientData : ScriptableObject
     [TextArea]
     public string m_explain = string.Empty;
 
+    [Header("Setting")]
     /// <summary>
     /// generate weight
     /// it can generate object this percent of
@@ -41,4 +43,10 @@ public class IngredientData : ScriptableObject
     /// per generate speed
     /// </summary>
     public int m_weightChange = 0;
+
+    /// <summary>
+    /// if game start
+    /// the amount that time
+    /// </summary>
+    public int m_startAmount = 0;
 }

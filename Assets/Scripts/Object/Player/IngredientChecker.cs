@@ -27,6 +27,8 @@ public class IngredientChecker : MonoBehaviour
     {
         if (collision.gameObject.tag == "Ingredient")
         {
+            m_playerController.GetIngredient(
+                collision.gameObject.GetComponent<Ingredient>().Code, 1);
             Destroy(collision.gameObject);
         }
     }

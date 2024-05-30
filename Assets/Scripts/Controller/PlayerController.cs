@@ -50,7 +50,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        
     }
 
     // Update is called once per frame
@@ -61,38 +61,26 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
+    /// if get ingredient
+    /// </summary>
+    /// <param name="argCode">ingredient code</param>
+    /// <param name="argAmount">amount</param>
+    public void GetIngredient(int argCode, int argAmount)
+    {
+        m_mainGameManager.GetIngredient(argCode, argAmount);
+    }
+
+    /// <summary>
     /// buildRaft
     /// </summary>
     public void UpgradeRaft()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            m_mainGameManager.UpgradeRaft(m_selectRaftX, m_selectRaftY);
+            m_mainGameManager.BuildRaft(m_selectRaftX, m_selectRaftY);
         }
     }
-    
-    /// <summary>
-    /// player move controll
-    /// </summary>
-    void MoveController()
-    {
-        if(Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            SetPlayerPosition(m_playerXPos, m_playerYPos - 1);
-        }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            SetPlayerPosition(m_playerXPos, m_playerYPos + 1);
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            SetPlayerPosition(m_playerXPos + 1, m_playerYPos);
-        }
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            SetPlayerPosition(m_playerXPos - 1, m_playerYPos);
-        }
-    }
+   
     
     /// <summary>
     /// set player position
@@ -124,7 +112,7 @@ public class PlayerController : MonoBehaviour
         {
             if(argRaftXIndex == m_selectRaftX && argRaftYIndex == m_selectRaftY)
             {
-                m_mainGameManager.GetRaft(m_selectRaftX, m_selectRaftY).SetRaftState(10001, 0);
+                m_mainGameManager.BuildRaft(m_selectRaftX, m_selectRaftY);
 
                 m_selectRaftX = m_playerXPos;
                 m_selectRaftY = m_playerYPos;
@@ -137,6 +125,29 @@ public class PlayerController : MonoBehaviour
             m_selectRaftY = argRaftYIndex;
 
             m_selectRaft.transform.position = _raft.gameObject.transform.position;
+        }
+    }
+
+    /// <summary>
+    /// player move controll
+    /// </summary>
+    void MoveController()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            SetPlayerPosition(m_playerXPos, m_playerYPos - 1);
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            SetPlayerPosition(m_playerXPos, m_playerYPos + 1);
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            SetPlayerPosition(m_playerXPos + 1, m_playerYPos);
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            SetPlayerPosition(m_playerXPos - 1, m_playerYPos);
         }
     }
 }

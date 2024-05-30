@@ -18,3 +18,5 @@ MonoBehaviour:
   m_sprite: {fileID: 21300000, guid: 4edbadb3aeef8cb4daabca7362071b74, type: 3}
   m_explain: 
   m_hp: 100
+  m_needIngredientCode: 51c30000
+  m_needIngredientAmount: fbffffff
