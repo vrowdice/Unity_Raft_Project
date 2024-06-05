@@ -4,6 +4,15 @@ using System.Collections.Generic;
 public class MainType
 {
     /// <summary>
+    /// countable object type
+    /// </summary>
+    public enum CountObjectType
+    {
+        Ingradient,
+        AboveObject
+    }
+
+    /// <summary>
     /// above object type
     /// </summary>
     public enum AboveObjectType

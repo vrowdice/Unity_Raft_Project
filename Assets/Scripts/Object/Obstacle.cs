@@ -86,14 +86,10 @@ public class Obstacle : MonoBehaviour
             
             for(int i = 0; i < _destroyRaft.Count; i++)
             {
-                Raft _getRaft = m_mainManager.GetRaft(_raft.RaftXIndexData +
-                    (int)_destroyRaft[i].x, _raft.RaftYIndexData +
-                    (int)_destroyRaft[i].y);
-
-                if(_getRaft != null)
-                {
-                    _getRaft.DamageRaft(GameManager.Instance.ObstacleDic[m_code].m_damage);
-                }
+                MainGameManager.Instance.DamageRaft(
+                    GameManager.Instance.ObstacleDic[m_code].m_damage,
+                    _raft.RaftXIndexData + (int)_destroyRaft[i].x,
+                    _raft.RaftYIndexData + (int)_destroyRaft[i].y);
             }
 
             Destroy(gameObject);

@@ -67,6 +67,25 @@ public class FloatGenerator : MonoBehaviour
     /// </summary>
     List<int> m_ingredientWeightChange = new List<int>();
 
+    [Header("Money")]
+    /// <summary>
+    /// money object
+    /// </summary>
+    [SerializeField]
+    GameObject m_moneyObject = null;
+
+    /// <summary>
+    /// obstacle speed
+    /// </summary>
+    [SerializeField]
+    float m_moneySpeed = 0.0f;
+
+    /// <summary>
+    /// generate speed
+    /// </summary>
+    [SerializeField]
+    float m_moneyGenSpeed = 0.0f;
+
     private void Awake()
     {
         m_mainGameManager = GameObject.Find("MainGameManager").GetComponent<MainGameManager>();
@@ -139,6 +158,14 @@ public class FloatGenerator : MonoBehaviour
         {
             _ingredient.SetIngredient(m_ingredientSpeed, 0.1f, GetRandomIngredientCode());
         }
+    }
+
+    /// <summary>
+    /// generate money
+    /// </summary>
+    void GenerateMoney()
+    {
+
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -13,6 +14,11 @@ public class GameManager : MonoBehaviour
     /// canvas
     /// </summary>
     Canvas m_canvas = null;
+
+    /// <summary>
+    /// in game money
+    /// </summary>
+    long m_money = 0;
 
     /// <summary>
     /// alert object
@@ -181,6 +187,31 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < m_ingredientDataList.Count; i++)
         {
             m_ingredientDic.Add(m_ingredientDataList[i].m_code, m_ingredientDataList[i]);
+        }
+    }
+
+    /// <summary>
+    /// change scene as name
+    /// </summary>
+    /// <param name="argSceneName"></param>
+    public void ChangeScene(string argSceneName)
+    {
+        SceneManager.LoadScene(argSceneName);
+    }
+
+    public long Money
+    {
+        get { return m_money; }
+        set
+        {
+            if(m_money + value <= 0)
+            {
+                m_money = 0;
+            }
+            else
+            {
+                m_money = value;
+            }
         }
     }
 

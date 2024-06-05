@@ -5,11 +5,6 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     /// <summary>
-    /// main game manager
-    /// </summary>
-    MainGameManager m_mainGameManager = null;
-
-    /// <summary>
     /// player view sprite
     /// </summary>
     GameObject m_playerViewObject = null;
@@ -39,18 +34,36 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     int m_selectRaftY = 0;
 
+    /// <summary>
+    /// max player hp
+    /// </summary>
+    int m_maxPlayerHp = 0;
+
+    /// <summary>
+    /// max player mp
+    /// </summary>
+    int m_maxPlayerMp = 0;
+
+    /// <summary>
+    /// player hp
+    /// </summary>
+    int m_playerHp = 0;
+
+    /// <summary>
+    /// player mp
+    /// </summary>
+    int m_playerMp = 0;
+
     private void Awake()
     {
-        m_mainGameManager = GameObject.Find("MainGameManager").GetComponent<MainGameManager>();
-
         m_playerViewObject = transform.Find("PlayerViewObject").gameObject;
         m_selectRaft = transform.Find("SelectRaft").gameObject;
     }
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        
+        MainGameManager.Instance.SetPlayerHpSlider();
+        MainGameManager.Instance.SetPlayerMpSlider();
     }
 
     // Update is called once per frame
@@ -67,7 +80,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="argAmount">amount</param>
     public void GetIngredient(int argCode, int argAmount)
     {
-        m_mainGameManager.GetIngredient(argCode, argAmount);
+        MainGameManager.Instance.GetIngredient(argCode, argAmount);
     }
 
     /// <summary>
@@ -77,7 +90,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            m_mainGameManager.BuildRaft(m_selectRaftX, m_selectRaftY);
+            MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
         }
     }
    
@@ -89,15 +102,15 @@ public class PlayerController : MonoBehaviour
     /// <param name="argRaftYIndex">raft y index</param>
     public void SetPlayerPosition(int argRaftXIndex, int argRaftYIndex)
     {
-        if(argRaftXIndex > m_mainGameManager.MaxRaftXSize - 1 ||
-           argRaftYIndex > m_mainGameManager.MaxRaftYSize - 1 ||
+        if(argRaftXIndex > MainGameManager.Instance.MaxRaftXSize - 1 ||
+           argRaftYIndex > MainGameManager.Instance.MaxRaftYSize - 1 ||
            argRaftXIndex < 0 ||
            argRaftYIndex < 0)
         {
             return;
         }
 
-        Raft _raft = m_mainGameManager.GetRaft(argRaftXIndex, argRaftYIndex);
+        Raft _raft = MainGameManager.Instance.GetRaft(argRaftXIndex, argRaftYIndex);
         if(_raft.Code > 10000)
         {
             m_playerXPos = argRaftXIndex;
@@ -112,12 +125,12 @@ public class PlayerController : MonoBehaviour
         {
             if(argRaftXIndex == m_selectRaftX && argRaftYIndex == m_selectRaftY)
             {
-                m_mainGameManager.BuildRaft(m_selectRaftX, m_selectRaftY);
+                MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
 
                 m_selectRaftX = m_playerXPos;
                 m_selectRaftY = m_playerYPos;
 
-                m_selectRaft.transform.position = m_mainGameManager.GetRaft(m_playerXPos, m_playerYPos).
+                m_selectRaft.transform.position = MainGameManager.Instance.GetRaft(m_playerXPos, m_playerYPos).
                     gameObject.transform.position;
                 return;
             }
@@ -126,6 +139,49 @@ public class PlayerController : MonoBehaviour
 
             m_selectRaft.transform.position = _raft.gameObject.transform.position;
         }
+    }
+
+    /// <summary>
+    /// go remain raft if no any under raft
+    /// will spwon same and close to back horizontal line
+    /// if it cant will spown another last horizontal line
+    /// will spwon below line 
+    /// if no any raft, game is over
+    /// </summary>
+    public void GoRemainRaft()
+    {
+        for(int i = 0; i < MainGameManager.Instance.MaxRaftXSize; i++)
+        {
+            for(int o = 0; o < MainGameManager.Instance.MaxRaftYSize; o++)
+            {
+                Raft _raft = MainGameManager.Instance.GetRaft(i, m_playerYPos + o);
+                if (_raft != null && _raft.Code > 10000)
+                {
+                    SetPlayerPosition(_raft.RaftXIndexData, _raft.RaftYIndexData);
+                    return;
+                }
+
+                _raft = MainGameManager.Instance.GetRaft(i, m_playerYPos - o);
+                if (_raft != null && _raft.Code > 10000)
+                {
+                    SetPlayerPosition(_raft.RaftXIndexData, _raft.RaftYIndexData);
+                    return;
+                }
+            }
+        }
+
+        MainGameManager.Instance.GameOver();
+    }
+
+    /// <summary>
+    /// if player got damaged
+    /// </summary>
+    /// <param name="argDamage">damage</param>
+    public void GetDamage(int argDamage)
+    {
+        PlayerHp += argDamage;
+
+        MainGameManager.Instance.SetPlayerHpSlider();
     }
 
     /// <summary>
@@ -148,6 +204,68 @@ public class PlayerController : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             SetPlayerPosition(m_playerXPos - 1, m_playerYPos);
+        }
+    }
+
+    public int PlayerXPos
+    {
+        get { return m_playerXPos; }
+    }
+
+    public int PlayerYPos
+    {
+        get { return m_playerYPos; }
+    }
+
+    public int MaxPlayerHp
+    {
+        get { return m_maxPlayerHp; }
+        set { m_maxPlayerHp = value; }
+    }
+
+    public int MaxPlayerMp
+    {
+        get { return m_maxPlayerMp; }
+        set { m_maxPlayerMp = value; }
+    }
+
+    public int PlayerHp
+    {
+        get { return m_playerHp; }
+        set
+        {
+            if(value >= m_maxPlayerHp)
+            {
+                m_playerHp = m_maxPlayerHp;
+                return;
+            }
+            else if(value <= 0)
+            {
+                m_playerHp = 0;
+                return;
+            }
+
+            m_playerHp = value;
+        }
+    }
+
+    public int PlayerMp
+    {
+        get { return m_playerMp; }
+        set
+        {
+            if (value >= m_maxPlayerMp)
+            {
+                m_playerMp = m_maxPlayerMp;
+                return;
+            }
+            else if (value <= 0)
+            {
+                m_playerMp = 0;
+                return;
+            }
+
+            m_playerMp = value;
         }
     }
 }
