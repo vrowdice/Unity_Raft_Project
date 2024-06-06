@@ -58,7 +58,7 @@ public class Obstacle : MonoBehaviour
     /// </summary>
     /// <param name="argXSpeed">x speed</param>
     /// <param name="argYSpeed">y speed</param>
-    public void SetObstacle(MainGameManager argMainManager ,float argXSpeed,
+    public void SetObstacle(float argXSpeed,
          float argYSpeed, int argCode)
     {
         if(argCode <= 0)
@@ -68,7 +68,6 @@ public class Obstacle : MonoBehaviour
             return;
         }
 
-        m_mainManager = argMainManager;
         m_xSpeed = argXSpeed;
         m_ySpeed = argYSpeed;
         m_code = argCode;

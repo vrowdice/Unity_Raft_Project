@@ -2,13 +2,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FloatGenerator : MonoBehaviour
+/// <summary>
+/// this class will put in
+/// float weight dictionary
+/// </summary>
+public class FloatWeight
 {
     /// <summary>
-    /// main game manager instance
+    /// first setting weight
     /// </summary>
-    MainGameManager m_mainGameManager = null;
+    public int m_mainWeight = 0;
 
+    /// <summary>
+    /// changed weight
+    /// </summary>
+    public int m_changeWeight = 0;
+
+    public int ChangeWeight
+    {
+        get
+        {
+            return m_changeWeight;
+        }
+        set
+        {
+            if(m_changeWeight + value <= 0)
+            {
+                m_changeWeight = 0;
+                return;
+            }
+
+            m_changeWeight = value;
+        }
+    }
+}
+
+public class FloatGenerator : MonoBehaviour
+{
     [Header("Obstacle")]
     /// <summary>
     /// main obstacle object
@@ -36,7 +66,7 @@ public class FloatGenerator : MonoBehaviour
     /// <summary>
     /// obstacle weight change values
     /// </summary>
-    List<int> m_obstacleWeightChange = new List<int>();
+    Dictionary<int, FloatWeight> m_obstacleWeightDic = new Dictionary<int, FloatWeight>();
 
     [Header("Ingredient")]
     /// <summary>
@@ -65,7 +95,7 @@ public class FloatGenerator : MonoBehaviour
     /// <summary>
     /// obstacle weight change values
     /// </summary>
-    List<int> m_ingredientWeightChange = new List<int>();
+    Dictionary<int, FloatWeight> m_ingredientWeightDic = new Dictionary<int, FloatWeight>();
 
     [Header("Money")]
     /// <summary>
@@ -86,30 +116,19 @@ public class FloatGenerator : MonoBehaviour
     [SerializeField]
     float m_moneyGenSpeed = 0.0f;
 
-    private void Awake()
-    {
-        m_mainGameManager = GameObject.Find("MainGameManager").GetComponent<MainGameManager>();
-    }
-
     // Start is called before the first frame update
     void Start()
     {
         StartCoroutine(SetIngredient());
         StartCoroutine(SetObstacle());
 
-        foreach (KeyValuePair<int, ObstacleData> val in GameManager.Instance.ObstacleDic)
-        {
-            m_obstacleAllWeight += val.Value.m_generateWeight;
-        }
-        foreach (KeyValuePair<int, IngredientData> val in GameManager.Instance.IngredientDic)
-        {
-            m_ingredientAllWeight += val.Value.m_generateWeight;
-        }
+        WeightDicSetting();
+        InvokeRepeating("ChangeWeight", 5.0f, 5.0f);
     }
 
     IEnumerator SetObstacle()
     {
-        while (m_mainGameManager.IsGame)
+        while (MainGameManager.Instance.IsGame)
         {
             yield return new WaitForSeconds(m_obstacleGenSpeed);
             GenerateObstacle();
@@ -118,7 +137,7 @@ public class FloatGenerator : MonoBehaviour
 
     IEnumerator SetIngredient()
     {
-        while (m_mainGameManager.IsGame)
+        while (MainGameManager.Instance.IsGame)
         {
             yield return new WaitForSeconds(m_ingredientGenSpeed);
             GenerateIngredient();
@@ -137,7 +156,7 @@ public class FloatGenerator : MonoBehaviour
         Obstacle _obstacle = _obj.GetComponent<Obstacle>();
 
         _obj.transform.position = new Vector2(transform.position.x, _randFloat);
-        _obstacle.SetObstacle(m_mainGameManager ,m_obstacleSpeed, 0.0f, GetRandomObstacleCode());
+        _obstacle.SetObstacle(m_obstacleSpeed, 0.0f, GetRandomObstacleCode());
     }
 
     /// <summary>
@@ -165,7 +184,14 @@ public class FloatGenerator : MonoBehaviour
     /// </summary>
     void GenerateMoney()
     {
+        int _randInt = Random.Range(-3, 4);
+        float _randFloat = _randInt * 1.5f;
 
+        GameObject _obj = Instantiate(m_moneyObject);
+        //Obstacle _obstacle = _obj.GetComponent<Obstacle>();
+
+        _obj.transform.position = new Vector2(transform.position.x, _randFloat);
+        //_obstacle.SetObstacle(m_obstacleSpeed, 0.0f, GetRandomObstacleCode());
     }
 
     /// <summary>
@@ -174,16 +200,14 @@ public class FloatGenerator : MonoBehaviour
     /// <returns>code</returns>
     public int GetRandomObstacleCode()
     {
-        Dictionary<int, ObstacleData> _dic = GameManager.Instance.ObstacleDic;
         int _rand = Random.Range(0, m_obstacleAllWeight);
         int _sum = 0;
-
-        foreach(KeyValuePair<int, ObstacleData> val in _dic)
+        foreach (KeyValuePair<int, FloatWeight> val in m_obstacleWeightDic)
         {
-            _sum += val.Value.m_generateWeight;
+            _sum += val.Value.m_changeWeight;
             if(_sum >= _rand)
             {
-                return val.Value.m_code;
+                return val.Key;
             }
         }
         return 0;
@@ -195,18 +219,68 @@ public class FloatGenerator : MonoBehaviour
     /// <returns>code</returns>
     public int GetRandomIngredientCode()
     {
-        Dictionary<int, IngredientData> _dic = GameManager.Instance.IngredientDic;
         int _rand = Random.Range(0, m_ingredientAllWeight);
         int _sum = 0;
-
-        foreach (KeyValuePair<int, IngredientData> val in _dic)
+        foreach (KeyValuePair<int, FloatWeight> val in m_ingredientWeightDic)
         {
-            _sum += val.Value.m_generateWeight;
+            _sum += val.Value.m_changeWeight;
+
             if (_sum >= _rand)
             {
-                return val.Value.m_code;
+                return val.Key;
             }
         }
         return 0;
+    }
+
+    /// <summary>
+    /// weight dictionary setting
+    /// </summary>
+    void WeightDicSetting()
+    {
+        foreach (KeyValuePair<int, ObstacleData> val in GameManager.Instance.ObstacleDic)
+        {
+            FloatWeight _float = new FloatWeight();
+
+            _float.m_mainWeight = val.Value.m_generateWeight;
+            _float.m_changeWeight = val.Value.m_generateWeight;
+
+            m_obstacleWeightDic.Add(val.Key, _float);
+
+            m_obstacleAllWeight += val.Value.m_generateWeight;
+        }
+
+        foreach (KeyValuePair<int, IngredientData> val in GameManager.Instance.IngredientDic)
+        {
+            FloatWeight _float = new FloatWeight();
+
+            _float.m_mainWeight = val.Value.m_generateWeight;
+            _float.m_changeWeight = val.Value.m_generateWeight;
+
+            m_ingredientWeightDic.Add(val.Key, _float);
+
+            m_ingredientAllWeight += val.Value.m_generateWeight;
+        }
+    }
+
+    /// <summary>
+    /// change weight
+    /// with gamemanager change weight
+    /// </summary>
+    void ChangeWeight()
+    {
+        m_obstacleAllWeight = 0;
+        foreach (KeyValuePair<int, FloatWeight> val in m_obstacleWeightDic)
+        {
+            val.Value.ChangeWeight += GameManager.Instance.GetObstacleData(val.Key).m_weightChange;
+            m_obstacleAllWeight += val.Value.ChangeWeight;
+        }
+
+        m_ingredientAllWeight = 0;
+        foreach (KeyValuePair<int, FloatWeight> val in m_ingredientWeightDic)
+        {
+            val.Value.ChangeWeight += GameManager.Instance.GetIngredientData(val.Key).m_weightChange;
+            m_ingredientAllWeight += val.Value.ChangeWeight;
+        }
     }
 }
