@@ -25,12 +25,12 @@ public class Raft : MonoBehaviour
     /// <summary>
     /// raft x axis index data
     /// </summary>
-    int m_raftXIndexData = -1;
+    int m_raftXIndex = -1;
 
     /// <summary>
     /// raft y axis index data
     /// </summary>
-    int m_raftYIndexData = -1;
+    int m_raftYIndex = -1;
 
     /// <summary>
     /// raft data info
@@ -121,27 +121,45 @@ public class Raft : MonoBehaviour
     }
     public int RaftXIndexData
     {
-        get { return m_raftXIndexData; }
-        set { this.m_raftXIndexData = value; }
+        get { return m_raftXIndex; }
+        set { this.m_raftXIndex = value; }
     }
     public int RaftYIndexData
     {
-        get { return m_raftYIndexData; }
-        set { this.m_raftYIndexData = value; }
+        get { return m_raftYIndex; }
+        set { this.m_raftYIndex = value; }
     }
     public int Code
     {
         get { return m_code; }
         set { this.m_code = value; }
     }
-    public int MaxHp
+    public int MaxRaftHp
     {
         get { return m_maxHp; }
         set { this.m_maxHp = value; }
     }
-    public int NowHp
+
+    public int RaftHp
     {
         get { return m_nowHp; }
-        set { this.m_nowHp = value; }
+        set
+        {
+            if (value >= m_maxHp)
+            {
+                m_nowHp = m_maxHp;
+                ResetSlider();
+                return;
+            }
+            else if (value <= 0)
+            {
+                m_nowHp = 0;
+                MainGameManager.Instance.DestroyRaft(m_raftXIndex, m_raftYIndex);
+                return;
+            }
+
+            m_nowHp = value;
+            SetSlider();
+        }
     }
 }

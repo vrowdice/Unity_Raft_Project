@@ -30,15 +30,11 @@ public class Obstacle : MonoBehaviour
     /// </summary>
     float m_ySpeed = 0.0f;
 
-    private void Start()
-    {
-
-    }
-
     // Update is called once per frame
     void Update()
     {
         ObstacleControll();
+        ObstacleDestroy();
     }
 
     /// <summary>
@@ -47,7 +43,14 @@ public class Obstacle : MonoBehaviour
     void ObstacleControll()
     {
         transform.Translate(new Vector2(-m_xSpeed, m_ySpeed) * Time.deltaTime);
-        if(transform.position.x <= -12.0f)
+    }
+
+    /// <summary>
+    /// destroy obstacles to the situation
+    /// </summary>
+    void ObstacleDestroy()
+    {
+        if (transform.position.x <= -12.0f)
         {
             Destroy(gameObject);
         }
@@ -73,7 +76,6 @@ public class Obstacle : MonoBehaviour
         m_code = argCode;
 
         m_viewSprite.sprite = GameManager.Instance.GetObstacleData(m_code).m_sprite;
-        m_viewSprite.color = Color.black;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -94,5 +96,10 @@ public class Obstacle : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+    }
+
+    public SpriteRenderer ViewSprite
+    {
+        get { return m_viewSprite; }
     }
 }

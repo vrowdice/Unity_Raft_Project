@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 50001
   m_name: branch
-  m_sprite: {fileID: 21300000, guid: 2b4752bce841cc74bb73820ce5212d34, type: 3}
+  m_sprite: {fileID: 21300000, guid: 7634f1a93c707f043a51c0802224e842, type: 3}
   m_explain: 
-  m_generateWeight: 100
-  m_weightChange: -2
-  m_startAmount: 50
+  m_generateWeight: 90
+  m_weightChange: 0
+  m_startAmount: 75

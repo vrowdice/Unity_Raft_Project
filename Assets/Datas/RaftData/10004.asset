@@ -17,4 +17,6 @@ MonoBehaviour:
   m_name: goldraft
   m_sprite: {fileID: 21300000, guid: 4edbadb3aeef8cb4daabca7362071b74, type: 3}
   m_explain: 
-  m_hp: 250
+  m_hp: 500
+  m_needIngredientCode: 54c30000
+  m_needIngredientAmount: f6ffffff

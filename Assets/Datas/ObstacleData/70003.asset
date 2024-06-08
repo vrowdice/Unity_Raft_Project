@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 70003
   m_name: boom
-  m_sprite: {fileID: 21300000, guid: 1bb69cd91685d9248a58b144052746f3, type: 3}
+  m_sprite: {fileID: 21300000, guid: f7fd2496aca7a204ba11543f34103e34, type: 3}
   m_explain: 
   m_destroyRaftPos:
   - {x: 0, y: 1}

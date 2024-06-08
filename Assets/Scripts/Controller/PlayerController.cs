@@ -4,6 +4,51 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Mp")]
+    /// <summary>
+    /// mp recovery value
+    /// </summary>
+    [SerializeField]
+    int m_mpRecoveryValue = 0;
+
+    /// <summary>
+    /// mp recovery delay
+    /// </summary>
+    [SerializeField]
+    float m_mpRecoveryDelay = 0.0f;
+
+    [Header("Skill")]
+    /// <summary>
+    /// raft repair speed
+    /// </summary>
+    [SerializeField]
+    float m_repairDelay = 0.0f;
+
+    /// <summary>
+    /// repair strength
+    /// </summary>
+    [SerializeField]
+    int m_repairStrength = 0;
+
+    /// <summary>
+    /// skill is on float speed setting
+    /// this value never be zero
+    /// </summary>
+    [SerializeField]
+    float m_skillOnSpeed = 0.0f;
+
+    /// <summary>
+    /// skill on mp use delay
+    /// </summary>
+    [SerializeField]
+    float m_skillOnMpUseDelay = 0.0f;
+
+    /// <summary>
+    /// mp used by warp
+    /// </summary>
+    [SerializeField]
+    int m_warpMpUse = 0;
+
     /// <summary>
     /// player view sprite
     /// </summary>
@@ -13,6 +58,11 @@ public class PlayerController : MonoBehaviour
     /// selected raft gameobject
     /// </summary>
     GameObject m_selectRaft = null;
+
+    /// <summary>
+    /// repair flag
+    /// </summary>
+    bool m_repairFlag = true;
 
     /// <summary>
     /// player x position
@@ -64,13 +114,14 @@ public class PlayerController : MonoBehaviour
     {
         MainGameManager.Instance.SetPlayerHpSlider();
         MainGameManager.Instance.SetPlayerMpSlider();
+
+        InvokeRepeating("MpRecover", m_mpRecoveryDelay, m_mpRecoveryDelay);
     }
 
     // Update is called once per frame
     void Update()
     {
-        MoveController();
-        UpgradeRaft();
+        PlayerkeyboardInput();
     }
 
     /// <summary>
@@ -81,17 +132,6 @@ public class PlayerController : MonoBehaviour
     public void GetIngredient(int argCode, int argAmount)
     {
         MainGameManager.Instance.GetIngredient(argCode, argAmount);
-    }
-
-    /// <summary>
-    /// buildRaft
-    /// </summary>
-    public void UpgradeRaft()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
-        }
     }
    
     
@@ -117,9 +157,7 @@ public class PlayerController : MonoBehaviour
             m_playerYPos = argRaftYIndex;
             transform.position = _raft.gameObject.transform.position;
 
-            m_selectRaftX = m_playerXPos;
-            m_selectRaftY = m_playerYPos;
-            m_selectRaft.transform.position = _raft.gameObject.transform.position;
+            SetSelectRaftPos(argRaftXIndex, argRaftYIndex);
         }
         else
         {
@@ -127,17 +165,56 @@ public class PlayerController : MonoBehaviour
             {
                 MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
 
-                m_selectRaftX = m_playerXPos;
-                m_selectRaftY = m_playerYPos;
-
-                m_selectRaft.transform.position = MainGameManager.Instance.GetRaft(m_playerXPos, m_playerYPos).
-                    gameObject.transform.position;
+                SetSelectRaftPos(m_playerXPos, m_playerYPos);
                 return;
             }
-            m_selectRaftX = argRaftXIndex;
-            m_selectRaftY = argRaftYIndex;
+            SetSelectRaftPos(argRaftXIndex, argRaftYIndex);
+        }
+    }
 
-            m_selectRaft.transform.position = _raft.gameObject.transform.position;
+    /// <summary>
+    /// if skill state is on
+    /// </summary>
+    public void SkillIsOn()
+    {
+        if (MainGameManager.Instance.SkillFlag)
+        {
+            CancelInvoke();
+
+            MainGameManager.Instance.SkillFlag = false;
+
+            Time.timeScale = 1.0f;
+            Time.fixedDeltaTime = 0.02f;
+
+            if(MainGameManager.Instance.GetRaft(m_selectRaftX, m_selectRaftY).Code < 10000)
+            {
+                SetSelectRaftPos(m_playerXPos, m_playerYPos);
+                GameManager.Instance.Alert("이동할 수 없습니다");
+                return;
+            }
+            else
+            {
+                if(m_playerXPos == m_selectRaftX && m_playerYPos == m_selectRaftY)
+                {
+                    return;
+                }
+
+                if (!SetMp(-m_warpMpUse))
+                {
+                    SetSelectRaftPos(m_playerXPos, m_playerYPos);
+                    GameManager.Instance.Alert("MP가 부족합니다!");
+                }
+                SetPlayerPosition(m_selectRaftX, m_selectRaftY);
+            }
+        }
+        else
+        {
+            InvokeRepeating("SkillOnMpUse", m_skillOnMpUseDelay, m_skillOnMpUseDelay);
+
+            MainGameManager.Instance.SkillFlag = true;
+            
+            Time.timeScale = m_skillOnSpeed;
+            Time.fixedDeltaTime = m_skillOnSpeed / 10 * Time.timeScale;
         }
     }
 
@@ -179,32 +256,201 @@ public class PlayerController : MonoBehaviour
     /// <param name="argDamage">damage</param>
     public void GetDamage(int argDamage)
     {
-        PlayerHp += argDamage;
+        if(PlayerHp + argDamage <= 0)
+        {
+            MainGameManager.Instance.GameOver();
+        }
 
-        MainGameManager.Instance.SetPlayerHpSlider();
+        PlayerHp += argDamage;
     }
 
     /// <summary>
-    /// player move controll
+    /// use mp
     /// </summary>
-    void MoveController()
+    /// <param name="argMp">mp to use</param>
+    /// <returns></returns>
+    public bool SetMp(int argMp)
     {
-        if (Input.GetKeyDown(KeyCode.UpArrow))
+        if(PlayerMp + argMp < 0)
+        {
+            return false;
+        }
+
+        PlayerMp += argMp;
+        return true;
+    }
+
+    /// <summary>
+    /// player move
+    /// 0 = up
+    /// 1 = down
+    /// 2 = right
+    /// 3 = left
+    /// </summary>
+    /// <param name="argMoveType">move type</param>
+    public void PlayerMoveInput(int argMoveType)
+    {
+        if (argMoveType == 0)
         {
             SetPlayerPosition(m_playerXPos, m_playerYPos - 1);
         }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        else if (argMoveType == 1)
         {
             SetPlayerPosition(m_playerXPos, m_playerYPos + 1);
         }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        else if (argMoveType == 2)
         {
             SetPlayerPosition(m_playerXPos + 1, m_playerYPos);
         }
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        else if (argMoveType == 3)
         {
             SetPlayerPosition(m_playerXPos - 1, m_playerYPos);
         }
+    }
+
+    /// <summary>
+    /// set select raft position
+    /// </summary>
+    /// <param name="argRaftXIndex"></param>
+    /// <param name="argRaftYIndex"></param>
+    /// <returns>is player position is change or not</returns>
+    void SetSelectRaftPos(int argRaftXIndex, int argRaftYIndex)
+    {
+        if (argRaftXIndex > MainGameManager.Instance.MaxRaftXSize - 1 ||
+        argRaftYIndex > MainGameManager.Instance.MaxRaftYSize - 1 ||
+        argRaftXIndex < 0 ||
+        argRaftYIndex < 0)
+        {
+            return;
+        }
+
+        m_selectRaftX = argRaftXIndex;
+        m_selectRaftY = argRaftYIndex;
+
+        m_selectRaft.transform.position = MainGameManager.Instance.GetRaft(argRaftXIndex, argRaftYIndex).
+            gameObject.transform.position;
+    }
+
+    /// <summary>
+    /// Mp auto recovery
+    /// call Invoke repeating
+    /// </summary>
+    void MpRecover()
+    {
+        SetMp(m_mpRecoveryValue);
+    }
+
+    /// <summary>
+    /// player keyboard input value
+    /// </summary>
+    void PlayerkeyboardInput()
+    {
+        if (MainGameManager.Instance.SkillFlag)
+        {
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                SetSelectRaftPos(m_selectRaftX, m_selectRaftY - 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                SetSelectRaftPos(m_selectRaftX, m_selectRaftY + 1);
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                SetSelectRaftPos(m_selectRaftX + 1, m_selectRaftY);
+            }
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                SetSelectRaftPos(m_selectRaftX - 1, m_selectRaftY);
+            }
+
+            if (Input.GetKeyDown(KeyCode.LeftAlt))
+            {
+                SkillIsOn();
+            }
+        }
+        else
+        {
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                PlayerMoveInput(0);
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                PlayerMoveInput(1);
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                PlayerMoveInput(2);
+            }
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                PlayerMoveInput(3);
+            }
+
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                UpgradeRaft();
+            }
+
+            if (Input.GetKeyDown(KeyCode.LeftAlt))
+            {
+                SkillIsOn();
+            }
+
+            if (Input.GetKey(KeyCode.LeftControl))
+            {
+                RepairRaft();
+            }
+        }
+    }
+
+    /// <summary>
+    /// buildRaft
+    /// </summary>
+    void UpgradeRaft()
+    {
+        MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
+    }
+
+    /// <summary>
+    /// repair raft
+    /// </summary>
+    void RepairRaft()
+    {
+        if (!m_repairFlag)
+        {
+            return;
+        }
+
+        if (MainGameManager.Instance.GetRaft(m_playerXPos, m_playerYPos).RaftHp ==
+            MainGameManager.Instance.GetRaft(m_playerXPos, m_playerYPos).MaxRaftHp ||
+            !SetMp(-1))
+        {
+            return;
+        }
+
+        Invoke("RepairFlagTrue", m_repairDelay);
+        MainGameManager.Instance.GetRaft(m_playerXPos, m_playerYPos).RaftHp += m_repairStrength;
+        m_repairFlag = false;
+    }
+
+    /// <summary>
+    /// repair flag to true
+    /// call invoke function
+    /// </summary>
+    void RepairFlagTrue()
+    {
+        m_repairFlag = true;
+    }
+
+    /// <summary>
+    /// skill on mp use
+    /// call invoke repeate
+    /// </summary>
+    void SkillOnMpUse()
+    {
+        SetMp(-1);
     }
 
     public int PlayerXPos
@@ -237,15 +483,18 @@ public class PlayerController : MonoBehaviour
             if(value >= m_maxPlayerHp)
             {
                 m_playerHp = m_maxPlayerHp;
-                return;
             }
             else if(value <= 0)
             {
                 m_playerHp = 0;
-                return;
+                MainGameManager.Instance.GameOver();
+            }
+            else
+            {
+                m_playerHp = value;
             }
 
-            m_playerHp = value;
+            MainGameManager.Instance.SetPlayerHpSlider();
         }
     }
 
@@ -257,15 +506,17 @@ public class PlayerController : MonoBehaviour
             if (value >= m_maxPlayerMp)
             {
                 m_playerMp = m_maxPlayerMp;
-                return;
             }
             else if (value <= 0)
             {
                 m_playerMp = 0;
-                return;
+            }
+            else
+            {
+                m_playerMp = value;
             }
 
-            m_playerMp = value;
+            MainGameManager.Instance.SetPlayerMpSlider();
         }
     }
 }
