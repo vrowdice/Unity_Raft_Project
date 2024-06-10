@@ -15,6 +15,11 @@ public class PlayerController : MonoBehaviour
     GameObject m_selectRaft = null;
 
     /// <summary>
+    /// buildFlag
+    /// </summary>
+    bool m_buildFlag = false;
+
+    /// <summary>
     /// player x position
     /// </summary>
     int m_playerXPos = 0;
