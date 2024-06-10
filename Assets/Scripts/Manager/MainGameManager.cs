@@ -374,13 +374,13 @@ public class MainGameManager : MonoBehaviour
     /// </summary>
     /// <param name="argRaftXIndex">raft x index</param>
     /// <param name="argRaftYIndex">raft y index</param>
-    public void BuildRaft(int argRaftXIndex, int argRaftYIndex)
+    public bool BuildRaft(int argRaftXIndex, int argRaftYIndex)
     {
         Raft _raft = GetRaft(argRaftXIndex, argRaftYIndex);
 
         if (_raft == null)
         {
-            return;
+            return false;
         }
 
         int _codeToChange = 10001;
@@ -393,18 +393,20 @@ public class MainGameManager : MonoBehaviour
         if(_data == null ||
             _data.m_needIngredientCode.Count != _data.m_needIngredientAmount.Count)
         {
-            return;
+            return false;
         }
 
         for(int i = 0; i < _data.m_needIngredientCode.Count; i++)
         {
             if (!m_ingredientCountDic[_data.m_needIngredientCode[i]].SetAmount(_data.m_needIngredientAmount[i]))
             {
-                return;
+                return false;
             }
         }
         
         SetRaftState(_codeToChange, _raft.AboveObject.Code, argRaftXIndex, argRaftYIndex);
+        
+        return true;
     }
 
     /// <summary>

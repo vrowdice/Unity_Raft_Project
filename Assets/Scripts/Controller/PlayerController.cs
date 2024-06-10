@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    /// <summary>
+    /// build delay
+    /// </summary>
+    [SerializeField]
+    float m_buildDelay = 0.0f;
+
     [Header("Mp")]
     /// <summary>
     /// mp recovery value
@@ -58,6 +64,11 @@ public class PlayerController : MonoBehaviour
     /// selected raft gameobject
     /// </summary>
     GameObject m_selectRaft = null;
+
+    /// <summary>
+    /// repair flag
+    /// </summary>
+    bool m_buildFlag = true;
 
     /// <summary>
     /// repair flag
@@ -390,7 +401,7 @@ public class PlayerController : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                UpgradeRaft();
+                BuildRaft();
             }
 
             if (Input.GetKeyDown(KeyCode.LeftAlt))
@@ -405,12 +416,24 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// buildRaft
-    /// </summary>
-    void UpgradeRaft()
+    void BuildGage()
     {
+
+    }
+
+    /// <summary>
+    /// build raft
+    /// </summary>
+    void BuildRaft()
+    {
+        if (m_buildFlag)
+        {
+            return;
+        }
+
+        Invoke("BuildFlagTrue", m_buildDelay);
         MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
+        m_buildFlag = false;
     }
 
     /// <summary>
@@ -433,6 +456,11 @@ public class PlayerController : MonoBehaviour
         Invoke("RepairFlagTrue", m_repairDelay);
         MainGameManager.Instance.GetRaft(m_playerXPos, m_playerYPos).RaftHp += m_repairStrength;
         m_repairFlag = false;
+    }
+
+    void BuildFlagTrue()
+    {
+        m_buildFlag = true;
     }
 
     /// <summary>
