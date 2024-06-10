@@ -38,15 +38,30 @@ public class Ingredient : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ObstacleControll();
+        IngredientControll();
+        IngredientDestroy();
     }
 
     /// <summary>
     /// move obstacle
     /// </summary>
-    void ObstacleControll()
+    void IngredientControll()
     {
-        m_rigidbody2D.velocity = new Vector2(-m_xSpeed, m_ySpeed);
+        if (MainGameManager.Instance.SkillFlag)
+        {
+            m_rigidbody2D.velocity = new Vector2(-m_xSpeed, m_ySpeed);
+        }
+        else
+        {
+            m_rigidbody2D.velocity = new Vector2(-m_xSpeed, m_ySpeed);
+        }
+    }
+
+    /// <summary>
+    /// destroy obstacles to the situation
+    /// </summary>
+    void IngredientDestroy()
+    {
         if (transform.position.x <= -12.0f)
         {
             Destroy(gameObject);
@@ -71,6 +86,11 @@ public class Ingredient : MonoBehaviour
         m_code = argCode;
 
         m_viewSprite.sprite = GameManager.Instance.GetIngredientData(m_code).m_sprite;
+    }
+
+    public SpriteRenderer ViewSprite
+    {
+        get { return m_viewSprite; }
     }
 
     public int Code

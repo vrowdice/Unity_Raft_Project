@@ -39,6 +39,14 @@ public class FloatWeight
 
 public class FloatGenerator : MonoBehaviour
 {
+    [Header("Common Balance")]
+    /// <summary>
+    /// balace change (weight, gen speed)
+    /// at this time
+    /// </summary>
+    [SerializeField]
+    float m_balanceChangeTime = 0.0f;
+
     [Header("Obstacle")]
     /// <summary>
     /// main obstacle object
@@ -53,15 +61,33 @@ public class FloatGenerator : MonoBehaviour
     float m_obstacleSpeed = 0.0f;
 
     /// <summary>
+    /// obstacle min generate speed
+    /// </summary>
+    [SerializeField]
+    float m_obstacleMinGenSpeed = 0.0f;
+
+    /// <summary>
     /// generate speed
     /// </summary>
     [SerializeField]
     float m_obstacleGenSpeed = 0.0f;
 
     /// <summary>
+    /// obstacle generate speed
+    /// change per second
+    /// </summary>
+    [SerializeField]
+    float m_obstacleGenSpeedChange = 0.0f;
+
+    /// <summary>
     /// obstacle all weight value
     /// </summary>
     int m_obstacleAllWeight = 0;
+
+    /// <summary>
+    /// obstalce parent empty obejct
+    /// </summary>
+    GameObject m_obstacleParentObj = null;
 
     /// <summary>
     /// obstacle weight change values
@@ -82,15 +108,33 @@ public class FloatGenerator : MonoBehaviour
     float m_ingredientSpeed = 0.0f;
 
     /// <summary>
+    /// ingredient max generate speed
+    /// </summary>
+    [SerializeField]
+    float m_ingredientMaxGenSpeed = 0.0f;
+
+    /// <summary>
     /// generate speed
     /// </summary>
     [SerializeField]
     float m_ingredientGenSpeed = 0.0f;
 
     /// <summary>
+    /// ingredient generate speed
+    /// change per second
+    /// </summary>
+    [SerializeField]
+    float m_ingredientGenSpeedChange = 0.0f;
+
+    /// <summary>
     /// ingredient all weight value
     /// </summary>
     int m_ingredientAllWeight = 0;
+
+    /// <summary>
+    /// ingredient parent empty obejct
+    /// </summary>
+    GameObject m_ingredientParentObj = null;
 
     /// <summary>
     /// obstacle weight change values
@@ -116,14 +160,31 @@ public class FloatGenerator : MonoBehaviour
     [SerializeField]
     float m_moneyGenSpeed = 0.0f;
 
+    /// <summary>
+    /// money generate speed
+    /// change per second
+    /// </summary>
+    [SerializeField]
+    float m_moneyGenSpeedChange = 0.0f;
+
+    /// <summary>
+    /// ingredient parent empty obejct
+    /// </summary>
+    GameObject m_moneyParentObj = null;
+
     // Start is called before the first frame update
     void Start()
     {
+        m_obstacleParentObj = new GameObject("ObstacleParent");
+        m_ingredientParentObj = new GameObject("IngredientParent");
+        m_moneyParentObj = new GameObject("MoneyParent");
+
         StartCoroutine(SetIngredient());
         StartCoroutine(SetObstacle());
 
         WeightDicSetting();
-        InvokeRepeating("ChangeWeight", 5.0f, 5.0f);
+        InvokeRepeating("ChangeWeight", m_balanceChangeTime, m_balanceChangeTime);
+        InvokeRepeating("ChangeGenSpeed", m_balanceChangeTime, m_balanceChangeTime);
     }
 
     IEnumerator SetObstacle()
@@ -149,14 +210,20 @@ public class FloatGenerator : MonoBehaviour
     /// </summary>
     void GenerateObstacle()
     {
-        int _randInt = Random.Range(-3, 4);
+        int _randInt = Random.Range(-2, 3);
         float _randFloat = _randInt * 1.5f;
-
         GameObject _obj =  Instantiate(m_obstacle);
         Obstacle _obstacle = _obj.GetComponent<Obstacle>();
 
+        int _randCode = GetRandomObstacleCode();
+
         _obj.transform.position = new Vector2(transform.position.x, _randFloat);
-        _obstacle.SetObstacle(m_obstacleSpeed, 0.0f, GetRandomObstacleCode());
+        _obstacle.SetObstacle(m_obstacleSpeed, 0.0f, _randCode);
+
+        _obj.transform.SetParent(m_obstacleParentObj.transform);
+
+        //not required once the raft image is defined
+        _obstacle.ViewSprite.color = MainGameManager.Instance.GetColor(_randCode);
     }
 
     /// <summary>
@@ -168,15 +235,22 @@ public class FloatGenerator : MonoBehaviour
         GameObject _obj = Instantiate(m_ingredient);
         Ingredient _ingredient = _obj.GetComponent<Ingredient>();
 
+        int _randCode = GetRandomIngredientCode();
+
         _obj.transform.position = new Vector2(transform.position.x, _randInt);
         if (_randInt <= 0)
         {
-            _ingredient.SetIngredient(m_ingredientSpeed, -0.1f, GetRandomIngredientCode());
+            _ingredient.SetIngredient(m_ingredientSpeed, -0.1f, _randCode);
         }
         else
         {
-            _ingredient.SetIngredient(m_ingredientSpeed, 0.1f, GetRandomIngredientCode());
+            _ingredient.SetIngredient(m_ingredientSpeed, 0.1f, _randCode);
         }
+
+        _obj.transform.SetParent(m_ingredientParentObj.transform);
+
+        //not required once the raft image is defined
+        _ingredient.ViewSprite.color = MainGameManager.Instance.GetColor(_randCode);
     }
 
     /// <summary>
@@ -281,6 +355,30 @@ public class FloatGenerator : MonoBehaviour
         {
             val.Value.ChangeWeight += GameManager.Instance.GetIngredientData(val.Key).m_weightChange;
             m_ingredientAllWeight += val.Value.ChangeWeight;
+        }
+    }
+
+    /// <summary>
+    /// change generate speed
+    /// </summary>
+    void ChangeGenSpeed()
+    {
+        if (m_obstacleMinGenSpeed >= m_obstacleGenSpeed)
+        {
+            m_obstacleGenSpeed = m_obstacleMinGenSpeed;
+        }
+        else
+        {
+            m_obstacleGenSpeed += m_obstacleGenSpeedChange;
+        }
+
+        if (m_ingredientMaxGenSpeed <= m_ingredientGenSpeed)
+        {
+            m_ingredientGenSpeed = m_ingredientMaxGenSpeed;
+        }
+        else
+        {
+            m_ingredientGenSpeed += m_ingredientGenSpeedChange;
         }
     }
 }

@@ -163,6 +163,12 @@ public class MainGameManager : MonoBehaviour
     int m_playerMaxMp = 0;
 
     /// <summary>
+    /// time scale down flag
+    /// (skill flag)
+    /// </summary>
+    bool m_skillFlag = false;
+
+    /// <summary>
     /// player controller
     /// </summary>
     PlayerController m_playerController = null;
@@ -301,8 +307,8 @@ public class MainGameManager : MonoBehaviour
         {
             _raft.gameObject.SetActive(true);
             _raft.Code = argRaftCode;
-            _raft.MaxHp = _gManager.GetRaftData(argRaftCode).m_hp;
-            _raft.NowHp = _raft.MaxHp;
+            _raft.MaxRaftHp = _gManager.GetRaftData(argRaftCode).m_hp;
+            _raft.RaftHp = _raft.MaxRaftHp;
 
             _raft.SetSlider();
             _spriteRenderer.sprite = _gManager.GetRaftData(argRaftCode).m_sprite;
@@ -321,22 +327,7 @@ public class MainGameManager : MonoBehaviour
         }
 
         //not required once the raft image is defined
-        if (argRaftCode == 10002)
-        {
-            _raft.ViewSprite.color = Color.gray;
-        }
-        else if (argRaftCode == 10003)
-        {
-            _raft.ViewSprite.color = Color.yellow;
-        }
-        else if (argRaftCode == 10004)
-        {
-            _raft.ViewSprite.color = Color.black;
-        }
-        else
-        {
-            _raft.ViewSprite.color = Color.white;
-        }
+        _raft.ViewSprite.color = GetColor(argRaftCode);
     }
 
     /// <summary>
@@ -431,17 +422,17 @@ public class MainGameManager : MonoBehaviour
             return;
         }
 
-        if (_raft.NowHp <= 0 || _raft.MaxHp <= 0 || _raft.NowHp > _raft.MaxHp)
+        if (_raft.RaftHp <= 0 || _raft.MaxRaftHp <= 0 || _raft.RaftHp > _raft.MaxRaftHp)
         {
             DestroyRaft(argRaftXIndex, argRaftYIndex);
             return;
         }
 
-        _raft.NowHp -= argDamage;
+        _raft.RaftHp -= argDamage;
 
         _raft.SetSlider();
 
-        if (_raft.NowHp <= 0)
+        if (_raft.RaftHp <= 0)
         {
             DestroyRaft(argRaftXIndex, argRaftYIndex);
             return;
@@ -566,6 +557,31 @@ public class MainGameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// set color rogic
+    /// this part will dont need after make raft and ingredient sprite
+    /// </summary>
+    /// <param name="argCode">raft, ingredient code</param>
+    /// <returns>color</returns>
+    public Color GetColor(int argCode)
+    {
+        int _colorCode = argCode % 10000;
+
+        switch (_colorCode)
+        {
+            case 1:
+                return new Color(196f / 255f, 140f / 255f, 80f / 255f);
+            case 2:
+                return new Color(112f / 255f, 221f / 255f, 255f / 255f);
+            case 3:
+                return Color.gray;
+            case 4:
+                return Color.yellow;
+            default:
+                return Color.white;
+        }
+    }
+
+    /// <summary>
     /// ingredient scroll view setting
     /// </summary>
     void SetIngredientScrollView()
@@ -579,6 +595,7 @@ public class MainGameManager : MonoBehaviour
 
             GameObject _object = Instantiate(m_ingredientImage, m_ingredientScrollViewContent.transform);
             _object.GetComponent<Image>().sprite = val.Value.m_sprite;
+            _object.GetComponent<Image>().color = GetColor(val.Key);
 
             _data.m_text = _object.GetComponentInChildren<Text>();
             _data.SetTextToAmount();
@@ -624,5 +641,10 @@ public class MainGameManager : MonoBehaviour
     public int MaxRaftYSize
     {
         get { return m_maxRaftYSize;  }
+    }
+    public bool SkillFlag
+    {
+        get { return m_skillFlag; }
+        set { m_skillFlag = value; }
     }
 }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 50003
   m_name: iron
-  m_sprite: {fileID: 21300000, guid: b6a96c7c65795c94abf54a62adbf5c38, type: 3}
+  m_sprite: {fileID: 21300000, guid: 7634f1a93c707f043a51c0802224e842, type: 3}
   m_explain: 
   m_generateWeight: 25
   m_weightChange: 1
