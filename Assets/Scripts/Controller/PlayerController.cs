@@ -4,13 +4,56 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Common")]
+    /// <summary>
+    /// player first position index
+    /// </summary>
+    [SerializeField]
+    int m_playerfirstXIndex = 0;
+
+    /// <summary>
+    /// player first position index
+    /// </summary>
+    [SerializeField]
+    int m_playerfirstYIndex = 0;
+
+    [Header("Build")]
+    /// <summary>
+    /// max value of build gage
+    /// </summary>
+    [SerializeField]
+    int m_maxBuildGage = 0;
+
     /// <summary>
     /// build delay
     /// </summary>
     [SerializeField]
     float m_buildDelay = 0.0f;
 
+    /// <summary>
+    /// build flag
+    /// </summary>
+    bool m_buildFlag = true;
+
+    [Header("Hp")]
+    /// <summary>
+    /// player max hp
+    /// </summary>
+    [SerializeField]
+    int m_playerMaxHp = 0;
+
+    /// <summary>
+    /// player hp
+    /// </summary>
+    int m_playerHp = 0;
+
     [Header("Mp")]
+    /// <summary>
+    /// player max mp
+    /// </summary>
+    [SerializeField]
+    int m_playerMaxMp = 0;
+
     /// <summary>
     /// mp recovery value
     /// </summary>
@@ -22,6 +65,11 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     [SerializeField]
     float m_mpRecoveryDelay = 0.0f;
+
+    /// <summary>
+    /// player mp
+    /// </summary>
+    int m_playerMp = 0;
 
     [Header("Skill")]
     /// <summary>
@@ -68,11 +116,6 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// repair flag
     /// </summary>
-    bool m_buildFlag = true;
-
-    /// <summary>
-    /// repair flag
-    /// </summary>
     bool m_repairFlag = true;
 
     /// <summary>
@@ -95,37 +138,22 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     int m_selectRaftY = 0;
 
-    /// <summary>
-    /// max player hp
-    /// </summary>
-    int m_maxPlayerHp = 0;
-
-    /// <summary>
-    /// max player mp
-    /// </summary>
-    int m_maxPlayerMp = 0;
-
-    /// <summary>
-    /// player hp
-    /// </summary>
-    int m_playerHp = 0;
-
-    /// <summary>
-    /// player mp
-    /// </summary>
-    int m_playerMp = 0;
-
     private void Awake()
     {
         m_playerViewObject = transform.Find("PlayerViewObject").gameObject;
         m_selectRaft = transform.Find("SelectRaft").gameObject;
+
+        m_playerHp = m_playerMaxHp;
+        m_playerMp = m_playerMaxMp;
     }
 
     private void Start()
     {
         MainGameManager.Instance.SetPlayerHpSlider();
         MainGameManager.Instance.SetPlayerMpSlider();
+        BuildGageSetting();
 
+        SetPlayerPosition(m_playerfirstXIndex, m_playerfirstYIndex);
         InvokeRepeating("MpRecover", m_mpRecoveryDelay, m_mpRecoveryDelay);
     }
 
@@ -174,9 +202,7 @@ public class PlayerController : MonoBehaviour
         {
             if(argRaftXIndex == m_selectRaftX && argRaftYIndex == m_selectRaftY)
             {
-                MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
-
-                SetSelectRaftPos(m_playerXPos, m_playerYPos);
+                BuildRaft();
                 return;
             }
             SetSelectRaftPos(argRaftXIndex, argRaftYIndex);
@@ -301,6 +327,11 @@ public class PlayerController : MonoBehaviour
     /// <param name="argMoveType">move type</param>
     public void PlayerMoveInput(int argMoveType)
     {
+        if (m_buildFlag)
+        {
+            BuildRaft();
+        }
+
         if (argMoveType == 0)
         {
             SetPlayerPosition(m_playerXPos, m_playerYPos - 1);
@@ -404,6 +435,11 @@ public class PlayerController : MonoBehaviour
                 BuildRaft();
             }
 
+            if (m_buildFlag)
+            {
+                return;
+            }
+
             if (Input.GetKeyDown(KeyCode.LeftAlt))
             {
                 SkillIsOn();
@@ -416,9 +452,29 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// build gage setting
+    /// </summary>
+    void BuildGageSetting()
+    {
+        MainGameManager.Instance.BuildSlider.maxValue = m_maxBuildGage;
+        MainGameManager.Instance.BuildSlider.minValue = 0;
+        MainGameManager.Instance.BuildSlider.value = 0;
+    }
+
+    /// <summary>
+    /// build gage
+    /// </summary>
     void BuildGage()
     {
-
+        MainGameManager.Instance.BuildSlider.value += 1;
+        
+        if(MainGameManager.Instance.BuildSlider.value == MainGameManager.Instance.BuildSlider.maxValue)
+        {
+            MainGameManager.Instance.BuildSlider.value = 0;
+            MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
+            BuildRaft();
+        }
     }
 
     /// <summary>
@@ -428,12 +484,23 @@ public class PlayerController : MonoBehaviour
     {
         if (m_buildFlag)
         {
-            return;
-        }
+            m_buildFlag = false;
 
-        Invoke("BuildFlagTrue", m_buildDelay);
-        MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
-        m_buildFlag = false;
+            MainGameManager.Instance.BuildSlider.gameObject.SetActive(false);
+            SetSelectRaftPos(m_playerXPos, m_playerYPos);
+
+            CancelInvoke();
+        }
+        else
+        {
+            m_buildFlag = true;
+
+            MainGameManager.Instance.BuildSlider.gameObject.SetActive(true);
+            MainGameManager.Instance.BuildSlider.transform.position =
+                new Vector2(m_selectRaft.transform.position.x, m_selectRaft.transform.position.y + 0.5f);
+
+            InvokeRepeating("BuildGage", m_buildDelay, m_buildDelay);
+        }
     }
 
     /// <summary>
@@ -491,16 +558,16 @@ public class PlayerController : MonoBehaviour
         get { return m_playerYPos; }
     }
 
-    public int MaxPlayerHp
+    public int PlayerMaxHp
     {
-        get { return m_maxPlayerHp; }
-        set { m_maxPlayerHp = value; }
+        get { return m_playerMaxHp; }
+        set { m_playerMaxHp = value; }
     }
 
-    public int MaxPlayerMp
+    public int PlayerMaxMp
     {
-        get { return m_maxPlayerMp; }
-        set { m_maxPlayerMp = value; }
+        get { return m_playerMaxMp; }
+        set { m_playerMaxMp = value; }
     }
 
     public int PlayerHp
@@ -508,9 +575,9 @@ public class PlayerController : MonoBehaviour
         get { return m_playerHp; }
         set
         {
-            if(value >= m_maxPlayerHp)
+            if(value >= m_playerMaxHp)
             {
-                m_playerHp = m_maxPlayerHp;
+                m_playerHp = m_playerMaxHp;
             }
             else if(value <= 0)
             {
@@ -531,9 +598,9 @@ public class PlayerController : MonoBehaviour
         get { return m_playerMp; }
         set
         {
-            if (value >= m_maxPlayerMp)
+            if (value >= m_playerMaxMp)
             {
-                m_playerMp = m_maxPlayerMp;
+                m_playerMp = m_playerMaxMp;
             }
             else if (value <= 0)
             {

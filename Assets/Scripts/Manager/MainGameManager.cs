@@ -63,6 +63,17 @@ public class MainGameManager : MonoBehaviour
     static MainGameManager g_mainGameManager;
 
     /// <summary>
+    /// player controller
+    /// </summary>
+    PlayerController m_playerController = null;
+
+    /// <summary>
+    /// time scale down flag
+    /// (skill flag)
+    /// </summary>
+    bool m_skillFlag = false;
+
+    /// <summary>
     /// in game = true, else = false
     /// </summary>
     bool m_isGame = false;
@@ -137,42 +148,6 @@ public class MainGameManager : MonoBehaviour
     /// </summary>
     Raft[,] m_raftBlockData = null;
 
-    [Header("Player")]
-    /// <summary>
-    /// player first position index
-    /// </summary>
-    [SerializeField]
-    int m_playerfirstXIndex = 0;
-
-    /// <summary>
-    /// player first position index
-    /// </summary>
-    [SerializeField]
-    int m_playerfirstYIndex = 0;
-
-    /// <summary>
-    /// player max hp
-    /// </summary>
-    [SerializeField]
-    int m_playerMaxHp = 0;
-
-    /// <summary>
-    /// player max mp
-    /// </summary>
-    [SerializeField]
-    int m_playerMaxMp = 0;
-
-    /// <summary>
-    /// time scale down flag
-    /// (skill flag)
-    /// </summary>
-    bool m_skillFlag = false;
-
-    /// <summary>
-    /// player controller
-    /// </summary>
-    PlayerController m_playerController = null;
-
     [Header("Ingredient")]
     /// <summary>
     /// ingredient image
@@ -223,6 +198,12 @@ public class MainGameManager : MonoBehaviour
     Slider m_playerMpSlider = null;
 
     /// <summary>
+    /// build delay
+    /// </summary>
+    [SerializeField]
+    Slider m_buildSlider = null;
+
+    /// <summary>
     /// player hp slider text
     /// </summary>
     [SerializeField]
@@ -253,20 +234,13 @@ public class MainGameManager : MonoBehaviour
         m_raftRoot = GameObject.Find("RaftRoot");
         m_canvas = GameObject.Find("Canvas");
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
-
-        m_playerController.MaxPlayerHp = m_playerMaxHp;
-        m_playerController.PlayerHp = m_playerMaxHp;
-
-        m_playerController.MaxPlayerMp = m_playerMaxMp;
-        m_playerController.PlayerMp = m_playerMaxMp;
+        
         m_isGame = true;
     }
 
     private void Start()
     {
         ResetRaft();
-
-        m_playerController.SetPlayerPosition(m_playerfirstXIndex, m_playerfirstYIndex);
 
         SetIngredientScrollView();
 
@@ -506,15 +480,14 @@ public class MainGameManager : MonoBehaviour
     /// <param name="argToSetValue">value to setting</param>
     public void SetPlayerHpSlider()
     {
-        m_playerController.MaxPlayerHp = m_playerMaxHp;
+        m_playerMpSlider.maxValue = m_playerController.PlayerMaxHp;
 
-        m_playerHpSlider.maxValue = m_playerMaxHp;
         m_playerHpSlider.minValue = 0;
 
         m_playerHpSlider.value = m_playerController.PlayerHp;
 
         m_playerHpText.text = "HP " +  m_playerController.PlayerHp + " / " +
-            m_playerController.MaxPlayerHp;
+            m_playerController.PlayerMaxHp;
     }
 
 
@@ -524,15 +497,14 @@ public class MainGameManager : MonoBehaviour
     /// <param name="argToSetValue">value to setting</param>
     public void SetPlayerMpSlider()
     {
-        m_playerController.MaxPlayerMp = m_playerMaxMp;
+        m_playerMpSlider.maxValue = m_playerController.PlayerMaxMp;
 
-        m_playerMpSlider.maxValue = m_playerMaxMp;
         m_playerMpSlider.minValue = 0;
 
         m_playerMpSlider.value = m_playerController.PlayerMp;
 
         m_playerMpText.text = "MP " + m_playerController.PlayerMp + " / " +
-            m_playerController.MaxPlayerMp;
+            m_playerController.PlayerMaxMp;
     }
 
     /// <summary>
@@ -631,6 +603,10 @@ public class MainGameManager : MonoBehaviour
     public GameObject RaftSlider
     {
         get { return m_raftSliderObject; }
+    }
+    public Slider BuildSlider
+    {
+        get { return m_buildSlider; }
     }
     public bool IsGame
     {
