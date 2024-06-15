@@ -615,8 +615,6 @@ public class MainGameManager : MonoBehaviour
     {
         get { return m_timeScaleDownFilterAni; }
     }
-
-
     public Slider BuildSlider
     {
         get { return m_buildSlider; }

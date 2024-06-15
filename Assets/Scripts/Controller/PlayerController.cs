@@ -17,6 +17,41 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     int m_playerfirstYIndex = 0;
 
+    /// <summary>
+    /// player view sprite
+    /// </summary>
+    GameObject m_playerViewObject = null;
+
+    /// <summary>
+    /// selected raft gameobject
+    /// </summary>
+    GameObject m_selectRaft = null;
+
+    /// <summary>
+    /// repair flag
+    /// </summary>
+    bool m_repairFlag = true;
+
+    /// <summary>
+    /// player x position
+    /// </summary>
+    int m_playerXPos = 0;
+
+    /// <summary>
+    /// player y position
+    /// </summary>
+    int m_playerYPos = 0;
+
+    /// <summary>
+    /// the raft selected x index
+    /// </summary>
+    int m_selectRaftX = 0;
+
+    /// <summary>
+    /// the raft selected y index
+    /// </summary>
+    int m_selectRaftY = 0;
+
     [Header("Build")]
     /// <summary>
     /// max value of build gage
@@ -102,41 +137,6 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     [SerializeField]
     int m_warpMpUse = 0;
-
-    /// <summary>
-    /// player view sprite
-    /// </summary>
-    GameObject m_playerViewObject = null;
-
-    /// <summary>
-    /// selected raft gameobject
-    /// </summary>
-    GameObject m_selectRaft = null;
-
-    /// <summary>
-    /// repair flag
-    /// </summary>
-    bool m_repairFlag = true;
-
-    /// <summary>
-    /// player x position
-    /// </summary>
-    int m_playerXPos = 0;
-
-    /// <summary>
-    /// player y position
-    /// </summary>
-    int m_playerYPos = 0;
-
-    /// <summary>
-    /// the raft selected x index
-    /// </summary>
-    int m_selectRaftX = 0;
-
-    /// <summary>
-    /// the raft selected y index
-    /// </summary>
-    int m_selectRaftY = 0;
 
     private void Awake()
     {
@@ -340,11 +340,6 @@ public class PlayerController : MonoBehaviour
     /// <param name="argMoveType">move type</param>
     public void PlayerMoveInput(int argMoveType)
     {
-        if (m_buildFlag)
-        {
-            BuildRaft();
-        }
-
         if (argMoveType == 0)
         {
             SetPlayerPosition(m_playerXPos, m_playerYPos - 1);
@@ -443,19 +438,19 @@ public class PlayerController : MonoBehaviour
                 PlayerMoveInput(3);
             }
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.LeftAlt))
             {
-                BuildRaft();
+                SkillIsOn();
             }
 
-            if (m_buildFlag)
+            if (MainGameManager.Instance.SkillFlag)
             {
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.LeftAlt))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                SkillIsOn();
+                BuildRaft();
             }
 
             if (Input.GetKey(KeyCode.LeftControl))
@@ -497,16 +492,17 @@ public class PlayerController : MonoBehaviour
     {
         if (!m_buildFlag)
         {
-            m_buildFlag = false;
+            m_buildFlag = true;
 
             MainGameManager.Instance.BuildSlider.gameObject.SetActive(false);
             SetSelectRaftPos(m_playerXPos, m_playerYPos);
+            BuildGageSetting();
 
             CancelInvoke("BuildGage");
         }
         else
         {
-            m_buildFlag = true;
+            m_buildFlag = false;
 
             MainGameManager.Instance.BuildSlider.gameObject.SetActive(true);
             MainGameManager.Instance.BuildSlider.transform.position =
@@ -536,11 +532,6 @@ public class PlayerController : MonoBehaviour
         Invoke("RepairFlagTrue", m_repairDelay);
         MainGameManager.Instance.GetRaft(m_playerXPos, m_playerYPos).RaftHp += m_repairStrength;
         m_repairFlag = false;
-    }
-
-    void BuildFlagTrue()
-    {
-        m_buildFlag = true;
     }
 
     /// <summary>
