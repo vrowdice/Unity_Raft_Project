@@ -502,7 +502,7 @@ public class PlayerController : MonoBehaviour
             MainGameManager.Instance.BuildSlider.gameObject.SetActive(false);
             SetSelectRaftPos(m_playerXPos, m_playerYPos);
 
-            CancelInvoke();
+            CancelInvoke("BuildGage");
         }
         else
         {
