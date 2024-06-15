@@ -10,25 +10,18 @@ public class IngredientChecker : MonoBehaviour
     [SerializeField]
     PlayerController m_playerController = null;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Ingredient")
         {
             m_playerController.GetIngredient(
                 collision.gameObject.GetComponent<Ingredient>().Code, 1);
+            Destroy(collision.gameObject);
+        }
+        if(collision.gameObject.tag == "Money")
+        {
+            m_playerController.GetMoney(
+                collision.gameObject.GetComponent<Money>().MoneyValue);
             Destroy(collision.gameObject);
         }
     }

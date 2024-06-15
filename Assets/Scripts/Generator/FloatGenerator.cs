@@ -181,6 +181,7 @@ public class FloatGenerator : MonoBehaviour
 
         StartCoroutine(SetIngredient());
         StartCoroutine(SetObstacle());
+        StartCoroutine(SetMoney());
 
         WeightDicSetting();
         InvokeRepeating("ChangeWeight", m_balanceChangeTime, m_balanceChangeTime);
@@ -202,6 +203,15 @@ public class FloatGenerator : MonoBehaviour
         {
             yield return new WaitForSeconds(m_ingredientGenSpeed);
             GenerateIngredient();
+        }
+    }
+
+    IEnumerator SetMoney()
+    {
+        while (MainGameManager.Instance.IsGame)
+        {
+            yield return new WaitForSeconds(m_moneyGenSpeed);
+            GenerateMoney();
         }
     }
 
@@ -259,13 +269,12 @@ public class FloatGenerator : MonoBehaviour
     void GenerateMoney()
     {
         int _randInt = Random.Range(-3, 4);
-        float _randFloat = _randInt * 1.5f;
-
         GameObject _obj = Instantiate(m_moneyObject);
-        //Obstacle _obstacle = _obj.GetComponent<Obstacle>();
+        Money _money = _obj.GetComponent<Money>();
 
-        _obj.transform.position = new Vector2(transform.position.x, _randFloat);
-        //_obstacle.SetObstacle(m_obstacleSpeed, 0.0f, GetRandomObstacleCode());
+        _obj.transform.position = new Vector2(transform.position.x, _randInt);
+        _obj.transform.SetParent(m_moneyParentObj.transform);
+        _money.SetMoney(m_moneySpeed, 0.0f, 100);
     }
 
     /// <summary>

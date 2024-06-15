@@ -173,6 +173,14 @@ public class PlayerController : MonoBehaviour
         MainGameManager.Instance.GetIngredient(argCode, argAmount);
     }
    
+    /// <summary>
+    /// get money
+    /// </summary>
+    /// <param name="argValue">money amount</param>
+    public void GetMoney(int argValue)
+    {
+        MainGameManager.Instance.SetPlayerMoneyText(argValue);
+    }
     
     /// <summary>
     /// set player position
@@ -216,14 +224,16 @@ public class PlayerController : MonoBehaviour
     {
         if (MainGameManager.Instance.SkillFlag)
         {
-            CancelInvoke();
+            CancelInvoke("SkillOnMpUse");
 
             MainGameManager.Instance.SkillFlag = false;
 
             Time.timeScale = 1.0f;
             Time.fixedDeltaTime = 0.02f;
 
-            if(MainGameManager.Instance.GetRaft(m_selectRaftX, m_selectRaftY).Code < 10000)
+            MainGameManager.Instance.TimeScaleDownFilterAni.SetBool("IsOn", false);
+
+            if (MainGameManager.Instance.GetRaft(m_selectRaftX, m_selectRaftY).Code < 10000)
             {
                 SetSelectRaftPos(m_playerXPos, m_playerYPos);
                 GameManager.Instance.Alert("이동할 수 없습니다");
@@ -252,6 +262,9 @@ public class PlayerController : MonoBehaviour
             
             Time.timeScale = m_skillOnSpeed;
             Time.fixedDeltaTime = m_skillOnSpeed / 10 * Time.timeScale;
+
+            MainGameManager.Instance.TimeScaleDownFilterAni.gameObject.SetActive(true);
+            MainGameManager.Instance.TimeScaleDownFilterAni.SetBool("IsOn", true);
         }
     }
 
@@ -482,7 +495,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void BuildRaft()
     {
-        if (m_buildFlag)
+        if (!m_buildFlag)
         {
             m_buildFlag = false;
 
