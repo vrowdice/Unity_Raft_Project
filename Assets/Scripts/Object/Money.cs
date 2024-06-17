@@ -15,11 +15,6 @@ public class Money : MonoBehaviour
     int m_moneyValue = 0;
 
     /// <summary>
-    /// object code
-    /// </summary>
-    int m_code = 0;
-
-    /// <summary>
     /// obstacle x move speed
     /// </summary>
     float m_xSpeed = 0.0f;

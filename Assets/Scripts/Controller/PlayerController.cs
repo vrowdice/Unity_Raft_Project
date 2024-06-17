@@ -33,6 +33,17 @@ public class PlayerController : MonoBehaviour
     bool m_repairFlag = true;
 
     /// <summary>
+    /// raft build = true
+    /// above obj build = false
+    /// </summary>
+    bool m_raftBuildFlag = true;
+
+    /// <summary>
+    /// above object code to build
+    /// </summary>
+    int m_nowAboveObjCode = 0;
+
+    /// <summary>
     /// player x position
     /// </summary>
     int m_playerXPos = 0;
@@ -170,6 +181,8 @@ public class PlayerController : MonoBehaviour
     /// <param name="argAmount">amount</param>
     public void GetIngredient(int argCode, int argAmount)
     {
+        SoundManager.Instance.IngredientGetSound.Play();
+
         MainGameManager.Instance.GetIngredient(argCode, argAmount);
     }
    
@@ -179,9 +192,39 @@ public class PlayerController : MonoBehaviour
     /// <param name="argValue">money amount</param>
     public void GetMoney(int argValue)
     {
+        SoundManager.Instance.MoneyGetSound.Play();
+
         MainGameManager.Instance.SetPlayerMoneyText(argValue);
     }
-    
+
+    public void BuildAboveObj()
+    {
+        if(MainGameManager.Instance.GetRaft(m_selectRaftX, m_selectRaftY).Code < 10000)
+        {
+            SetSelectRaftPos(m_playerXPos, m_playerYPos);
+            GameManager.Instance.Alert("뗏목 위가 아니면 설치할 수 없습니다!");
+            return;
+        }
+
+        if (!m_buildFlag)
+        {
+            ResetInvoke();
+        }
+        else
+        {
+            SoundManager.Instance.BuildSound.Play();
+
+            m_buildFlag = false;
+            m_raftBuildFlag = false;
+
+            MainGameManager.Instance.BuildSlider.gameObject.SetActive(true);
+            MainGameManager.Instance.BuildSlider.transform.position =
+                new Vector2(m_selectRaft.transform.position.x, m_selectRaft.transform.position.y + 0.5f);
+
+            InvokeRepeating("BuildGage", m_buildDelay, m_buildDelay);
+        }
+    }
+
     /// <summary>
     /// set player position
     /// </summary>
@@ -228,8 +271,7 @@ public class PlayerController : MonoBehaviour
 
             MainGameManager.Instance.SkillFlag = false;
 
-            Time.timeScale = 1.0f;
-            Time.fixedDeltaTime = 0.02f;
+            MainGameManager.Instance.ChangeMaxTime();
 
             MainGameManager.Instance.TimeScaleDownFilterAni.SetBool("IsOn", false);
 
@@ -256,6 +298,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            ResetInvoke();
             InvokeRepeating("SkillOnMpUse", m_skillOnMpUseDelay, m_skillOnMpUseDelay);
 
             MainGameManager.Instance.SkillFlag = true;
@@ -306,7 +349,9 @@ public class PlayerController : MonoBehaviour
     /// <param name="argDamage">damage</param>
     public void GetDamage(int argDamage)
     {
-        if(PlayerHp + argDamage <= 0)
+        ResetInvoke();
+
+        if (PlayerHp + argDamage <= 0)
         {
             MainGameManager.Instance.GameOver();
         }
@@ -340,6 +385,8 @@ public class PlayerController : MonoBehaviour
     /// <param name="argMoveType">move type</param>
     public void PlayerMoveInput(int argMoveType)
     {
+        ResetInvoke();
+
         if (argMoveType == 0)
         {
             SetPlayerPosition(m_playerXPos, m_playerYPos - 1);
@@ -453,6 +500,11 @@ public class PlayerController : MonoBehaviour
                 BuildRaft();
             }
 
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                MainGameManager.Instance.BuildAboveObjBtn(30001);
+            }
+
             if (Input.GetKey(KeyCode.LeftControl))
             {
                 RepairRaft();
@@ -471,38 +523,20 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// build gage
-    /// </summary>
-    void BuildGage()
-    {
-        MainGameManager.Instance.BuildSlider.value += 1;
-        
-        if(MainGameManager.Instance.BuildSlider.value == MainGameManager.Instance.BuildSlider.maxValue)
-        {
-            MainGameManager.Instance.BuildSlider.value = 0;
-            MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
-            BuildRaft();
-        }
-    }
-
-    /// <summary>
     /// build raft
     /// </summary>
     void BuildRaft()
     {
         if (!m_buildFlag)
         {
-            m_buildFlag = true;
-
-            MainGameManager.Instance.BuildSlider.gameObject.SetActive(false);
-            SetSelectRaftPos(m_playerXPos, m_playerYPos);
-            BuildGageSetting();
-
-            CancelInvoke("BuildGage");
+            ResetInvoke();
         }
         else
         {
+            SoundManager.Instance.BuildSound.Play();
+
             m_buildFlag = false;
+            m_raftBuildFlag = true;
 
             MainGameManager.Instance.BuildSlider.gameObject.SetActive(true);
             MainGameManager.Instance.BuildSlider.transform.position =
@@ -513,11 +547,35 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
+    /// build gage
+    /// </summary>
+    void BuildGage()
+    {
+        MainGameManager.Instance.BuildSlider.value += 1;
+        
+        if(MainGameManager.Instance.BuildSlider.value == MainGameManager.Instance.BuildSlider.maxValue)
+        {
+            if (m_raftBuildFlag)
+            {
+                MainGameManager.Instance.BuildSlider.value = 0;
+                MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
+                BuildRaft();
+            }
+            else
+            {
+                MainGameManager.Instance.BuildSlider.value = 0;
+                MainGameManager.Instance.SetAboveObjectState(m_nowAboveObjCode, m_selectRaftX, m_selectRaftY);
+                BuildAboveObj();
+            }
+        }
+    }
+
+    /// <summary>
     /// repair raft
     /// </summary>
     void RepairRaft()
     {
-        if (!m_repairFlag)
+        if (!m_repairFlag || !m_buildFlag)
         {
             return;
         }
@@ -550,6 +608,33 @@ public class PlayerController : MonoBehaviour
     void SkillOnMpUse()
     {
         SetMp(-1);
+    }
+
+    void ResetInvoke()
+    {
+        m_repairFlag = true;
+        if (!m_buildFlag)
+        {
+            SoundManager.Instance.BuildSound.Stop();
+
+            m_buildFlag = true;
+
+            MainGameManager.Instance.BuildSlider.gameObject.SetActive(false);
+            SetSelectRaftPos(m_playerXPos, m_playerYPos);
+            BuildGageSetting();
+
+            CancelInvoke("BuildGage");
+        }
+        if (MainGameManager.Instance.SkillFlag)
+        {
+            SkillIsOn();
+        }
+    }
+
+    public int NowAboveObjCode
+    {
+        get { return m_nowAboveObjCode; }
+        set { m_nowAboveObjCode = value; }
     }
 
     public int PlayerXPos

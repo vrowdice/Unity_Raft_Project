@@ -14,10 +14,10 @@ public class AboveObject : MonoBehaviour
     /// </summary>
     SpriteRenderer m_spriteRenderer = null;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         m_spriteRenderer = GetComponent<SpriteRenderer>();
+        gameObject.SetActive(false);
     }
 
     public SpriteRenderer SpriteRenderer

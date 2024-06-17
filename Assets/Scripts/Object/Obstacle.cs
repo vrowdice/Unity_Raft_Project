@@ -11,11 +11,6 @@ public class Obstacle : MonoBehaviour
     SpriteRenderer m_viewSprite = null;
 
     /// <summary>
-    /// main manager instance
-    /// </summary>
-    MainGameManager m_mainManager = null;
-
-    /// <summary>
     /// object code
     /// </summary>
     int m_code = 0;
@@ -76,6 +71,15 @@ public class Obstacle : MonoBehaviour
         m_code = argCode;
 
         m_viewSprite.sprite = GameManager.Instance.GetObstacleData(m_code).m_sprite;
+    }
+
+    /// <summary>
+    /// change speed
+    /// </summary>
+    /// <param name="argSpeed">speed</param>
+    public void SetSpeed(float argSpeed)
+    {
+        m_xSpeed = argSpeed;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

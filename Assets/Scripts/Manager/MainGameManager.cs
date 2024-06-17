@@ -68,20 +68,15 @@ public class MainGameManager : MonoBehaviour
     PlayerController m_playerController = null;
 
     /// <summary>
+    /// float generator
+    /// </summary>
+    FloatGenerator m_floatGenerator = null;
+
+    /// <summary>
     /// time scale down flag
     /// (skill flag)
     /// </summary>
     bool m_skillFlag = false;
-
-    /// <summary>
-    /// in game = true, else = false
-    /// </summary>
-    bool m_isGame = false;
-
-    /// <summary>
-    /// in game score
-    /// </summary>
-    long m_score = 0;
 
     /// <summary>
     /// scene canvas
@@ -89,11 +84,61 @@ public class MainGameManager : MonoBehaviour
     GameObject m_canvas = null;
 
     [Header("Game Play")]
+
+    /// <summary>
+    /// game over gage
+    /// </summary>
+    [SerializeField]
+    Slider m_gameOverGage = null;
+
+    /// <summary>
+    /// clear gage
+    /// </summary>
+    [SerializeField]
+    Slider m_clearGage = null;
+
+    /// <summary>
+    /// clear gage text
+    /// </summary>
+    [SerializeField]
+    Text m_clearGageText = null;
+
+    /// <summary>
+    /// max clear distance
+    /// </summary>
+    [SerializeField]
+    float m_maxClearDistance = 0;
+
     /// <summary>
     /// this score add per second
     /// </summary>
     [SerializeField]
     int m_secScore = 0;
+
+    /// <summary>
+    /// clear distance
+    /// </summary>
+    float m_clearDistance = 0.0f;
+
+    /// <summary>
+    /// clear distance change
+    /// </summary>
+    float m_clearDistanceChange = 0.1f;
+
+    /// <summary>
+    /// motor count
+    /// </summary>
+    int m_motorCount = 0;
+
+    /// <summary>
+    /// in game score
+    /// </summary>
+    long m_score = 0;
+
+    /// <summary>
+    /// in game = true, else = false
+    /// </summary>
+    bool m_isGame = false;
 
     [Header("Raft")]
     /// <summary>
@@ -171,18 +216,13 @@ public class MainGameManager : MonoBehaviour
     /// above object image UI
     /// </summary>
     [SerializeField]
-    GameObject m_aboveObjectImage = null;
+    GameObject m_aboveObjectBtn = null;
 
     /// <summary>
     /// above object scrollview content
     /// </summary>
     [SerializeField]
     GameObject m_aboveObjectScrollViewContent = null;
-
-    /// <summary>
-    /// ingredient count dictionaty
-    /// </summary>
-    Dictionary<int, CountData> m_aboveObjectCountDic = new Dictionary<int, CountData>();
 
     [Header("Player UI")]
     /// <summary>
@@ -241,6 +281,7 @@ public class MainGameManager : MonoBehaviour
         m_raftRoot = GameObject.Find("RaftRoot");
         m_canvas = GameObject.Find("Canvas");
         m_playerController = GameObject.Find("Player").GetComponent<PlayerController>();
+        m_floatGenerator = GameObject.Find("FloatGenerator").GetComponent<FloatGenerator>();
 
         m_isGame = true;
     }
@@ -248,10 +289,13 @@ public class MainGameManager : MonoBehaviour
     private void Start()
     {
         ResetRaft();
+        ResetAboveObj();
 
-        SetIngredientScrollView();
+        ResetIngredientScrollView();
+        ResetAboveObjScrollView();
 
         SetPlayerMoneyText(GameManager.Instance.Money);
+        SetClearGamveOverGage();
 
         InvokeRepeating("SecScore", 0.0f, 0.1f);
     }
@@ -263,8 +307,7 @@ public class MainGameManager : MonoBehaviour
     /// <param name="argRaftYIndex">raft y index</param>
     /// <param name="argRaftCode">raft data code if value <= 0 raft is not here</param>
     /// <param name="argAboveObjCode">raft above object data code if value <= 0 object is not here</param>
-    public void SetRaftState(int argRaftCode, int argAboveObjCode,
-        int argRaftXIndex, int argRaftYIndex)
+    public void SetRaftState(int argRaftCode, int argRaftXIndex, int argRaftYIndex)
     {
         if (argRaftXIndex <= -1 || argRaftYIndex <= -1)
         {
@@ -272,7 +315,6 @@ public class MainGameManager : MonoBehaviour
         }
 
         GameManager _gManager = GameManager.Instance;
-
         Raft _raft = GetRaft(argRaftXIndex, argRaftYIndex);
         SpriteRenderer _spriteRenderer = _raft.ViewSprite;
 
@@ -295,59 +337,7 @@ public class MainGameManager : MonoBehaviour
             _spriteRenderer.sprite = _gManager.GetRaftData(argRaftCode).m_sprite;
         }
 
-        //above object setting
-        if (argAboveObjCode <= 0)
-        {
-            _raft.AboveObject.gameObject.SetActive(false);
-        }
-        else
-        {
-            _raft.AboveObject.gameObject.SetActive(true);
-            _raft.AboveObject.Code = argAboveObjCode;
-            _raft.AboveObject.SpriteRenderer.sprite = _gManager.GetObjData(argAboveObjCode).m_sprite;
-        }
-
-        //not required once the raft image is defined
         _raft.ViewSprite.color = GetColor(argRaftCode);
-    }
-
-    /// <summary>
-    /// generate rafts at first
-    /// </summary>
-    void ResetRaft()
-    {
-        m_raftBlockData = new Raft[m_maxRaftXSize, m_maxRaftYSize];
-
-        //first raft setting
-        bool[,] _firstRaft = new bool[m_maxRaftXSize, m_maxRaftYSize];
-        for (int i = m_startRaftXSize / 2; i < m_startRaftXSize + m_startRaftXSize / 2; i++)
-        {
-            for (int o = m_startRaftYSize / 2; o < m_startRaftYSize + m_startRaftYSize / 2; o++)
-            {
-                _firstRaft[i, o] = true;
-            }
-        }
-
-        //raft generate
-        for (int i = 0; i < m_maxRaftYSize; i++)
-        {
-            for (int o = 0; o < m_maxRaftXSize; o++)
-            {
-                GameObject _raftObj = Instantiate(m_raftObject, m_raftRoot.transform);
-                _raftObj.transform.localPosition = new Vector3(o * 1.5f + m_raftPivot.x, i * -1.5f + m_raftPivot.y);
-
-                Raft _raft = _raftObj.GetComponent<Raft>();
-                m_raftBlockData[o, i] = _raft;
-                if (_firstRaft[o, i])
-                {
-                    SetRaftState(10001, 0, o, i);
-                }
-                else
-                {
-                    SetRaftState(0, 0, o, i);
-                }
-            }
-        }
     }
 
     /// <summary>
@@ -358,7 +348,6 @@ public class MainGameManager : MonoBehaviour
     public bool BuildRaft(int argRaftXIndex, int argRaftYIndex)
     {
         Raft _raft = GetRaft(argRaftXIndex, argRaftYIndex);
-
         if (_raft == null)
         {
             return false;
@@ -385,7 +374,8 @@ public class MainGameManager : MonoBehaviour
             }
         }
 
-        SetRaftState(_codeToChange, _raft.AboveObject.Code, argRaftXIndex, argRaftYIndex);
+        SetRaftState(_codeToChange, argRaftXIndex, argRaftYIndex);
+        SetAboveObjectState(_raft.AboveObject.Code, argRaftXIndex, argRaftYIndex);
 
         return true;
     }
@@ -398,16 +388,12 @@ public class MainGameManager : MonoBehaviour
     /// <param name="argRaftYIndex">raft y index</param>
     public void DamageRaft(int argDamage, int argRaftXIndex, int argRaftYIndex)
     {
+        SoundManager.Instance.RaftDamageSound.Play();
+
         Raft _raft = GetRaft(argRaftXIndex, argRaftYIndex);
 
-        if (_raft == null)
+        if (_raft == null || _raft.Code <= 10000)
         {
-            return;
-        }
-
-        if (_raft.RaftHp <= 0 || _raft.MaxRaftHp <= 0 || _raft.RaftHp > _raft.MaxRaftHp)
-        {
-            DestroyRaft(argRaftXIndex, argRaftYIndex);
             return;
         }
 
@@ -429,7 +415,15 @@ public class MainGameManager : MonoBehaviour
     /// <param name="argRaftYIndex">raft y index</param>
     public void DestroyRaft(int argRaftXIndex, int argRaftYIndex)
     {
-        SetRaftState(0, 0, argRaftXIndex, argRaftYIndex);
+        SoundManager.Instance.RaftDestroyAudio.Play();
+
+        if(GetRaft(argRaftXIndex, argRaftYIndex).AboveObject.Code == 30001)
+        {
+            MotorCount--;
+        }
+        SetAboveObjectState(0, argRaftXIndex, argRaftYIndex);
+
+        SetRaftState(0, argRaftXIndex, argRaftYIndex);
 
         if (m_playerController.PlayerXPos == argRaftXIndex &&
             m_playerController.PlayerYPos == argRaftYIndex)
@@ -437,30 +431,6 @@ public class MainGameManager : MonoBehaviour
             m_playerController.GetDamage(-20);
             m_playerController.GoRemainRaft();
         }
-    }
-
-    /// <summary>
-    /// get score
-    /// </summary>
-    public void GetScore(long argScore)
-    {
-        if (m_score + argScore <= 0)
-        {
-            m_score = 0;
-            m_scoreText.text = m_score.ToString();
-            return;
-        }
-        m_score += argScore;
-
-        m_scoreText.text = m_score.ToString();
-    }
-
-    /// <summary>
-    /// game over
-    /// </summary>
-    public void GameOver()
-    {
-        GameManager.Instance.ChangeScene("Title");
     }
 
     /// <summary>
@@ -481,13 +451,97 @@ public class MainGameManager : MonoBehaviour
         }
     }
 
+    public void SetAboveObjectState(int argAboveObjCode, int argRaftXIndex, int argRaftYIndex)
+    {
+        GameManager _gManager = GameManager.Instance;
+        Raft _raft = GetRaft(argRaftXIndex, argRaftYIndex);
+        if (_raft.Code < 10000)
+        {
+            return;
+        }
+
+        //above object setting
+        switch (argAboveObjCode)
+        {
+            case 30001:
+                MotorCount++;
+                break;
+            case 30002:
+                break;
+            case 30003:
+                break;
+            case 30004:
+                break;
+            case 30005:
+                break;
+            default:
+                _raft.AboveObject.gameObject.SetActive(false);
+                _raft.AboveObject.Code = argAboveObjCode;
+                return;
+        }
+
+        _raft.AboveObject.gameObject.SetActive(true);
+        _raft.AboveObject.Code = argAboveObjCode;
+        _raft.AboveObject.SpriteRenderer.sprite = _gManager.GetAboveObjData(argAboveObjCode).m_sprite;
+    }
+
+    /// <summary>
+    /// build above obj button
+    /// </summary>
+    /// <param name="argCode">above obj code</param>
+    public void BuildAboveObjBtn(int argCode)
+    {
+        if(argCode <= 30000)
+        {
+            return;
+        }
+
+        m_playerController.NowAboveObjCode = argCode;
+        m_playerController.BuildAboveObj();
+    }
+
+    /// <summary>
+    /// get score
+    /// </summary>
+    public void GetScore(long argScore)
+    {
+        if (m_score + argScore <= 0)
+        {
+            m_score = 0;
+            m_scoreText.text = m_score.ToString();
+            return;
+        }
+        m_score += argScore;
+
+        m_scoreText.text = m_score.ToString();
+    }
+
+    /// <summary>
+    /// change max time flow
+    /// </summary>
+    public void ChangeMaxTime()
+    {
+        m_isGame = true;
+
+        Time.timeScale = 1.0f;
+        Time.fixedDeltaTime = 0.02f;
+    }
+
+    /// <summary>
+    /// game over
+    /// </summary>
+    public void GameOver()
+    {
+        GameManager.Instance.ChangeScene("Title");
+    }
+
     /// <summary>
     /// player hp setting
     /// </summary>
     /// <param name="argToSetValue">value to setting</param>
     public void SetPlayerHpSlider()
     {
-        m_playerMpSlider.maxValue = m_playerController.PlayerMaxHp;
+        m_playerHpSlider.maxValue = m_playerController.PlayerMaxHp;
 
         m_playerHpSlider.minValue = 0;
 
@@ -563,9 +617,59 @@ public class MainGameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// generate rafts at first
+    /// </summary>
+    void ResetRaft()
+    {
+        m_raftBlockData = new Raft[m_maxRaftXSize, m_maxRaftYSize];
+
+        //first raft setting
+        bool[,] _firstRaft = new bool[m_maxRaftXSize, m_maxRaftYSize];
+        for (int i = 0; i < m_startRaftXSize; i++)
+        {
+            for (int o = m_startRaftYSize / 2; o < m_startRaftYSize + m_startRaftYSize / 2; o++)
+            {
+                _firstRaft[i, o] = true;
+            }
+        }
+
+        //raft generate
+        for (int i = 0; i < m_maxRaftYSize; i++)
+        {
+            for (int o = 0; o < m_maxRaftXSize; o++)
+            {
+                GameObject _raftObj = Instantiate(m_raftObject, m_raftRoot.transform);
+                _raftObj.transform.localPosition = new Vector3(o * 1.5f + m_raftPivot.x, i * -1.5f + m_raftPivot.y);
+
+                Raft _raft = _raftObj.GetComponent<Raft>();
+                m_raftBlockData[o, i] = _raft;
+                if (_firstRaft[o, i])
+                {
+                    SetRaftState(10001, o, i);
+                }
+                else
+                {
+                    SetRaftState(0, o, i);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// reset above object
+    /// </summary>
+    void ResetAboveObj()
+    {
+        bool[,] _firstRaft = new bool[m_maxRaftXSize, m_maxRaftYSize];
+        int _pos = m_startRaftYSize / 2 + 1;
+
+        SetAboveObjectState(30001, 0, _pos);
+    }
+
+    /// <summary>
     /// ingredient scroll view setting
     /// </summary>
-    void SetIngredientScrollView()
+    void ResetIngredientScrollView()
     {
         foreach (KeyValuePair<int, IngredientData> val in GameManager.Instance.IngredientDic)
         {
@@ -582,6 +686,51 @@ public class MainGameManager : MonoBehaviour
             _data.SetTextToAmount();
 
             m_ingredientCountDic.Add(val.Key, _data);
+        }
+    }
+
+    /// <summary>
+    /// ingredient scroll view setting
+    /// </summary>
+    void ResetAboveObjScrollView()
+    {
+        foreach (KeyValuePair<int, AboveObjectData> val in GameManager.Instance.AboveObjDic)
+        {
+            GameObject _object = Instantiate(m_aboveObjectBtn, m_aboveObjectScrollViewContent.transform);
+            _object.GetComponent<Image>().sprite = val.Value.m_sprite;
+            _object.GetComponent<AboveObjBtn>().Code = val.Key;
+        }
+    }
+
+    /// <summary>
+    /// setting clear, game over gage
+    /// </summary>
+    void SetClearGamveOverGage()
+    {
+        m_gameOverGage.minValue = 0;
+        m_gameOverGage.maxValue = m_maxClearDistance;
+        m_gameOverGage.value = 0;
+
+        m_clearGage.minValue = 0;
+        m_clearGage.maxValue = m_maxClearDistance;
+        m_clearGage.value = 0;
+
+        InvokeRepeating("ClearGage", 0.0f, 0.1f);
+    }
+
+    /// <summary>
+    /// get clear gage
+    /// </summary>
+    void ClearGage()
+    {
+        m_clearDistance += m_clearDistanceChange;
+
+        m_clearGage.value = m_clearDistance;
+        m_clearGageText.text = m_clearDistance + " / " + m_maxClearDistance;
+
+        if (m_clearDistance >= m_maxClearDistance)
+        {
+            GameOver();
         }
     }
 
@@ -622,6 +771,23 @@ public class MainGameManager : MonoBehaviour
     public bool IsGame
     {
         get { return m_isGame; }
+        set { m_isGame = value; }
+    }
+    public bool SkillFlag
+    {
+        get { return m_skillFlag; }
+        set { m_skillFlag = value; }
+    }
+    public int MotorCount
+    {
+        get { return m_motorCount; }
+        set
+        {
+            m_motorCount = value;
+
+            m_clearDistanceChange = 0.1f + m_motorCount * 0.02f;
+            m_floatGenerator.FloatSpeed = m_floatGenerator.FirstFloatSpeed + m_motorCount * 0.2f;
+        }
     }
     public int MaxRaftXSize
     {
@@ -631,9 +797,5 @@ public class MainGameManager : MonoBehaviour
     {
         get { return m_maxRaftYSize; }
     }
-    public bool SkillFlag
-    {
-        get { return m_skillFlag; }
-        set { m_skillFlag = value; }
-    }
+
 }

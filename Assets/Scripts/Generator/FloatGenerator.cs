@@ -47,18 +47,23 @@ public class FloatGenerator : MonoBehaviour
     [SerializeField]
     float m_balanceChangeTime = 0.0f;
 
+    /// <summary>
+    /// first setting float speed
+    /// </summary>
+    [SerializeField]
+    float m_firstFloatSpeed = 0.0f;
+
+    /// <summary>
+    /// all floatSpeed
+    /// </summary>
+    float m_floatSpeed = 0.0f;
+
     [Header("Obstacle")]
     /// <summary>
     /// main obstacle object
     /// </summary>
     [SerializeField]
     GameObject m_obstacle = null;
-
-    /// <summary>
-    /// obstacle speed
-    /// </summary>
-    [SerializeField]
-    float m_obstacleSpeed = 0.0f;
 
     /// <summary>
     /// obstacle min generate speed
@@ -102,12 +107,6 @@ public class FloatGenerator : MonoBehaviour
     GameObject m_ingredient = null;
 
     /// <summary>
-    /// obstacle speed
-    /// </summary>
-    [SerializeField]
-    float m_ingredientSpeed = 0.0f;
-
-    /// <summary>
     /// ingredient max generate speed
     /// </summary>
     [SerializeField]
@@ -149,35 +148,27 @@ public class FloatGenerator : MonoBehaviour
     GameObject m_moneyObject = null;
 
     /// <summary>
-    /// obstacle speed
-    /// </summary>
-    [SerializeField]
-    float m_moneySpeed = 0.0f;
-
-    /// <summary>
     /// generate speed
     /// </summary>
     [SerializeField]
     float m_moneyGenSpeed = 0.0f;
 
     /// <summary>
-    /// money generate speed
-    /// change per second
-    /// </summary>
-    [SerializeField]
-    float m_moneyGenSpeedChange = 0.0f;
-
-    /// <summary>
     /// ingredient parent empty obejct
     /// </summary>
     GameObject m_moneyParentObj = null;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         m_obstacleParentObj = new GameObject("ObstacleParent");
         m_ingredientParentObj = new GameObject("IngredientParent");
         m_moneyParentObj = new GameObject("MoneyParent");
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        FloatSpeed = m_firstFloatSpeed;
 
         StartCoroutine(SetIngredient());
         StartCoroutine(SetObstacle());
@@ -228,7 +219,7 @@ public class FloatGenerator : MonoBehaviour
         int _randCode = GetRandomObstacleCode();
 
         _obj.transform.position = new Vector2(transform.position.x, _randFloat);
-        _obstacle.SetObstacle(m_obstacleSpeed, 0.0f, _randCode);
+        _obstacle.SetObstacle(m_floatSpeed, 0.0f, _randCode);
 
         _obj.transform.SetParent(m_obstacleParentObj.transform);
 
@@ -250,11 +241,11 @@ public class FloatGenerator : MonoBehaviour
         _obj.transform.position = new Vector2(transform.position.x, _randInt);
         if (_randInt <= 0)
         {
-            _ingredient.SetIngredient(m_ingredientSpeed, -0.1f, _randCode);
+            _ingredient.SetIngredient(m_floatSpeed, -0.1f, _randCode);
         }
         else
         {
-            _ingredient.SetIngredient(m_ingredientSpeed, 0.1f, _randCode);
+            _ingredient.SetIngredient(m_floatSpeed, 0.1f, _randCode);
         }
 
         _obj.transform.SetParent(m_ingredientParentObj.transform);
@@ -274,7 +265,7 @@ public class FloatGenerator : MonoBehaviour
 
         _obj.transform.position = new Vector2(transform.position.x, _randInt);
         _obj.transform.SetParent(m_moneyParentObj.transform);
-        _money.SetMoney(m_moneySpeed, 0.0f, 100);
+        _money.SetMoney(m_floatSpeed, 0.0f, 100);
     }
 
     /// <summary>
@@ -314,6 +305,21 @@ public class FloatGenerator : MonoBehaviour
             }
         }
         return 0;
+    }
+
+    /// <summary>
+    /// change speed all object generated float and generate float
+    /// </summary>
+    void ChangeAllFloatSpeed()
+    {
+        for (int i = 0; i < m_obstacleParentObj.transform.childCount; i++)
+        {
+            m_obstacleParentObj.transform.GetChild(i).GetComponent<Obstacle>().SetSpeed(m_floatSpeed);
+        }
+        for (int i = 0; i < m_ingredientParentObj.transform.childCount; i++)
+        {
+            m_ingredientParentObj.transform.GetChild(i).GetComponent<Ingredient>().SetSpeed(m_floatSpeed);
+        }
     }
 
     /// <summary>
@@ -388,6 +394,21 @@ public class FloatGenerator : MonoBehaviour
         else
         {
             m_ingredientGenSpeed += m_ingredientGenSpeedChange;
+        }
+    }
+
+    public float FirstFloatSpeed
+    {
+        get { return m_firstFloatSpeed; }
+    }
+    public float FloatSpeed
+    {
+        get { return m_floatSpeed; }
+        set 
+        { 
+            m_floatSpeed = value;
+
+            ChangeAllFloatSpeed();
         }
     }
 }

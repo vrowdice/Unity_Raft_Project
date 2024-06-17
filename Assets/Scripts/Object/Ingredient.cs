@@ -88,6 +88,15 @@ public class Ingredient : MonoBehaviour
         m_viewSprite.sprite = GameManager.Instance.GetIngredientData(m_code).m_sprite;
     }
 
+    /// <summary>
+    /// change speed
+    /// </summary>
+    /// <param name="argSpeed">speed</param>
+    public void SetSpeed(float argSpeed)
+    {
+        m_xSpeed = argSpeed;
+    }
+
     public SpriteRenderer ViewSprite
     {
         get { return m_viewSprite; }

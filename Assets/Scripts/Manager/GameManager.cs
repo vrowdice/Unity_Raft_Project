@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
     /// object data list to add
     /// </summary>
     [SerializeField]
-    List<ObjectData> m_objDataList = new List<ObjectData>();
+    List<AboveObjectData> m_aboveObjDataList = new List<AboveObjectData>();
 
     /// <summary>
     /// obstacle data to add
@@ -58,7 +58,7 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// raft data dictionary
     /// </summary>
-    Dictionary<int, ObjectData> m_objDataDic = new Dictionary<int, ObjectData>();
+    Dictionary<int, AboveObjectData> m_aboveObjDataDic = new Dictionary<int, AboveObjectData>();
 
     /// <summary>
     /// raft data dictionary
@@ -72,8 +72,16 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        g_gameManager = this;
-        DontDestroyOnLoad(this.gameObject);
+        if(g_gameManager == null)
+        {
+            g_gameManager = this;
+        }
+        else
+        {
+            Destroy(this);
+        }
+        
+        DontDestroyOnLoad(gameObject);
 
         SetDicData();
     }
@@ -113,11 +121,11 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="argObjCode">object code</param>
     /// <returns>objcet data</returns>
-    public ObjectData GetObjData(int argObjCode)
+    public AboveObjectData GetAboveObjData(int argObjCode)
     {
         try
         {
-            return m_objDataDic[argObjCode];
+            return m_aboveObjDataDic[argObjCode];
         }
         catch
         {
@@ -176,9 +184,9 @@ public class GameManager : MonoBehaviour
         {
             m_raftDataDic.Add(m_raftDataList[i].m_code, m_raftDataList[i]);
         }
-        for (int i = 0; i < m_objDataList.Count; i++)
+        for (int i = 0; i < m_aboveObjDataList.Count; i++)
         {
-            m_objDataDic.Add(m_objDataList[i].m_code, m_objDataList[i]);
+            m_aboveObjDataDic.Add(m_aboveObjDataList[i].m_code, m_aboveObjDataList[i]);
         }
         for (int i = 0; i < m_obstacleDataList.Count; i++)
         {
@@ -228,6 +236,14 @@ public class GameManager : MonoBehaviour
         get
         {
             return m_ingredientDic;
+        }
+    }
+
+    public Dictionary<int, AboveObjectData> AboveObjDic
+    {
+        get
+        {
+            return m_aboveObjDataDic;
         }
     }
 

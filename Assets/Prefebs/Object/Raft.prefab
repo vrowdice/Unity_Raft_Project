@@ -71,7 +71,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 4edbadb3aeef8cb4daabca7362071b74, type: 3}
   m_Color: {r: 0.43137255, g: 0.27450982, b: 0.23429157, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -167,13 +167,14 @@ GameObject:
   - component: {fileID: 2404228891676792483}
   - component: {fileID: 330469002672835932}
   - component: {fileID: 6074371933226160243}
+  - component: {fileID: 5963838457263246664}
   m_Layer: 0
   m_Name: AboveObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2404228891676792483
 Transform:
   m_ObjectHideFlags: 0
@@ -181,9 +182,9 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6129626414110539406}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 4, y: 4, z: 1}
   m_Children: []
   m_Father: {fileID: 632430690097403096}
   m_RootOrder: 1
@@ -227,8 +228,8 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
+  m_SortingOrder: 1
+  m_Sprite: {fileID: -4729337936656799967, guid: 8c186969fff2aa7448ccd125f6625193, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -251,3 +252,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a85d892fac266ee4c909b498b92cf560, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!111 &5963838457263246664
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6129626414110539406}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Animation: {fileID: 7400000, guid: 25b5f19a0ad6c4941a429d545fb118a4, type: 2}
+  m_Animations:
+  - {fileID: 7400000, guid: 25b5f19a0ad6c4941a429d545fb118a4, type: 2}
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_CullingType: 0
