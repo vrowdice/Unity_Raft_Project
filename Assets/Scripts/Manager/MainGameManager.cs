@@ -360,20 +360,17 @@ public class MainGameManager : MonoBehaviour
         }
 
         RaftData _data = GameManager.Instance.GetRaftData(_codeToChange);
-        if (_data == null ||
-            _data.m_needIngredientCode.Count != _data.m_needIngredientAmount.Count)
+        if (_data == null)
         {
             return false;
         }
 
-        for (int i = 0; i < _data.m_needIngredientCode.Count; i++)
+        if(!UseIngredient(_data.m_needIngredientCode, _data.m_needIngredientAmount))
         {
-            if (!m_ingredientCountDic[_data.m_needIngredientCode[i]].SetAmount(_data.m_needIngredientAmount[i]))
-            {
-                return false;
-            }
+            GameManager.Instance.Alert("재료가 부족합니다");
+            return false;
         }
-
+        
         SetRaftState(_codeToChange, argRaftXIndex, argRaftYIndex);
         SetAboveObjectState(_raft.AboveObject.Code, argRaftXIndex, argRaftYIndex);
 
@@ -496,6 +493,14 @@ public class MainGameManager : MonoBehaviour
             return;
         }
 
+        if(!CheckIngredient(
+            GameManager.Instance.GetAboveObjData(argCode).m_needIngredientCode,
+            GameManager.Instance.GetAboveObjData(argCode).m_needIngredientAmount))
+        {
+            GameManager.Instance.Alert("재료가 부족합니다");
+            return;
+        }
+
         m_playerController.NowAboveObjCode = argCode;
         m_playerController.BuildAboveObj();
     }
@@ -614,6 +619,54 @@ public class MainGameManager : MonoBehaviour
             default:
                 return Color.white;
         }
+    }
+
+    /// <summary>
+    /// check ingredient amount
+    /// </summary>
+    /// <param name="argCode">code</param>
+    /// <param name="argAmount">amount</param>
+    public bool CheckIngredient(List<int> argCodeList, List<int> argAmountList)
+    {
+        if (argCodeList.Count != argAmountList.Count)
+        {
+            Debug.LogError("code and amount is not match!");
+            return false;
+        }
+
+        for (int i = 0; i < argCodeList.Count; i++)
+        {
+            if (m_ingredientCountDic[argCodeList[i]].m_amount < -argAmountList[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// use ingredient
+    /// </summary>
+    /// <param name="argCode">code</param>
+    /// <param name="argAmount">amount</param>
+    public bool UseIngredient(List<int> argCodeList, List<int> argAmountList)
+    {
+        if (argCodeList.Count != argAmountList.Count)
+        {
+            Debug.LogError("code and amount is not match!");
+            return false;
+        }
+
+        for (int i = 0; i < argCodeList.Count; i++)
+        {
+            if (!m_ingredientCountDic[argCodeList[i]].SetAmount(argAmountList[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

@@ -15,3 +15,5 @@ MonoBehaviour:
   m_code: 30001
   m_sprite: {fileID: -4729337936656799967, guid: 8c186969fff2aa7448ccd125f6625193, type: 3}
   m_explain: 
+  m_needIngredientCode: 52c3000053c30000
+  m_needIngredientAmount: fbfffffffbffffff

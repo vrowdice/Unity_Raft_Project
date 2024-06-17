@@ -533,6 +533,20 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            int _nextRaft = MainGameManager.Instance.GetRaft(m_selectRaftX, m_selectRaftY).Code + 1;
+            if(_nextRaft <= 10000)
+            {
+                _nextRaft = 10001;
+            }
+            
+            if (!MainGameManager.Instance.CheckIngredient(
+                GameManager.Instance.GetRaftData(_nextRaft).m_needIngredientCode,
+                GameManager.Instance.GetRaftData(_nextRaft).m_needIngredientAmount))
+            {
+                GameManager.Instance.Alert("재료가 부족합니다");
+                return;
+            }
+
             SoundManager.Instance.BuildSound.Play();
 
             m_buildFlag = false;
@@ -559,14 +573,22 @@ public class PlayerController : MonoBehaviour
             {
                 MainGameManager.Instance.BuildSlider.value = 0;
                 MainGameManager.Instance.BuildRaft(m_selectRaftX, m_selectRaftY);
-                BuildRaft();
             }
             else
             {
+                if (!MainGameManager.Instance.UseIngredient(
+                    GameManager.Instance.GetAboveObjData(m_nowAboveObjCode).m_needIngredientCode,
+                    GameManager.Instance.GetAboveObjData(m_nowAboveObjCode).m_needIngredientAmount))
+                {
+                    ResetInvoke();
+                    return;
+                }
+
                 MainGameManager.Instance.BuildSlider.value = 0;
                 MainGameManager.Instance.SetAboveObjectState(m_nowAboveObjCode, m_selectRaftX, m_selectRaftY);
-                BuildAboveObj();
             }
+
+            ResetInvoke();
         }
     }
 

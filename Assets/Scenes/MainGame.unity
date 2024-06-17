@@ -2941,7 +2941,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: f082e69f825d0aa44b687e592731c0a8, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 43438b90cb0d2e14fbd8533859379437, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5062,16 +5062,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2b914d7729520e4987b9120092e2069, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_balanceChangeTime: 5
-  m_firstFloatSpeed: 3
+  m_balanceChangeTime: 4
+  m_firstFloatSpeed: 2
   m_obstacle: {fileID: 1717517591731453506, guid: 6ddd02d6a7c74d94b808e098134b05e6, type: 3}
   m_obstacleMinGenSpeed: 1
   m_obstacleGenSpeed: 2.5
   m_obstacleGenSpeedChange: -0.05
   m_ingredient: {fileID: 5863030127429743839, guid: 4821fc32463472a448b5f8a55ce94258, type: 3}
   m_ingredientMaxGenSpeed: 2
-  m_ingredientGenSpeed: 0.1
-  m_ingredientGenSpeedChange: 0.005
+  m_ingredientGenSpeed: 0.2
+  m_ingredientGenSpeedChange: 0.01
   m_moneyObject: {fileID: 345729264188068035, guid: 90413fe5fbf12e0429c30a92143c9a30, type: 3}
   m_moneyGenSpeed: 5
 --- !u!4 &1883749897

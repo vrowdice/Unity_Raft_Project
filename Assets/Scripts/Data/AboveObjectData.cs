@@ -26,4 +26,16 @@ public class AboveObjectData : ScriptableObject
     /// </summary>
     [TextArea]
     public string m_explain = string.Empty;
+
+    /// <summary>
+    /// the ingredient code
+    /// it needed to build
+    /// </summary>
+    public List<int> m_needIngredientCode = new List<int>();
+
+    /// <summary>
+    /// the ingredient amount
+    /// it needed to build
+    /// </summary>
+    public List<int> m_needIngredientAmount = new List<int>();
 }
