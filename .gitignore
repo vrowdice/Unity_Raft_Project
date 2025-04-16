@@ -3,3 +3,9 @@
 ################################################################################
 
 /Temp
+/Raft_Project.sln
+/obj/Debug
+/Logs
+/Library
+/Assembly-CSharp.csproj
+/.vs/Raft_Project/v16
