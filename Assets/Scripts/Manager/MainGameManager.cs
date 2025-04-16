@@ -297,7 +297,7 @@ public class MainGameManager : MonoBehaviour
         SetPlayerMoneyText(GameManager.Instance.Money);
         SetClearGamveOverGage();
 
-        InvokeRepeating("SecScore", 0.0f, 0.1f);
+        InvokeRepeating("SecScore", 1.0f, 1.0f);
     }
 
     /// <summary>
@@ -306,7 +306,6 @@ public class MainGameManager : MonoBehaviour
     /// <param name="argRaftXIndex">raft x index</param>
     /// <param name="argRaftYIndex">raft y index</param>
     /// <param name="argRaftCode">raft data code if value <= 0 raft is not here</param>
-    /// <param name="argAboveObjCode">raft above object data code if value <= 0 object is not here</param>
     public void SetRaftState(int argRaftCode, int argRaftXIndex, int argRaftYIndex)
     {
         if (argRaftXIndex <= -1 || argRaftYIndex <= -1)
@@ -314,6 +313,7 @@ public class MainGameManager : MonoBehaviour
             return;
         }
 
+        //get data
         GameManager _gManager = GameManager.Instance;
         Raft _raft = GetRaft(argRaftXIndex, argRaftYIndex);
         SpriteRenderer _spriteRenderer = _raft.ViewSprite;

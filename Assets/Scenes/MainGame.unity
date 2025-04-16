@@ -3455,7 +3455,7 @@ GameObject:
   - component: {fileID: 1498553499}
   - component: {fileID: 1498553497}
   m_Layer: 5
-  m_Name: ScoreText
+  m_Name: TimeText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3513,7 +3513,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: New Text
+  m_Text: '0
+
+'
 --- !u!222 &1498553498
 CanvasRenderer:
   m_ObjectHideFlags: 0

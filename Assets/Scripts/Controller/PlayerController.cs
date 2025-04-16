@@ -232,6 +232,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="argRaftYIndex">raft y index</param>
     public void SetPlayerPosition(int argRaftXIndex, int argRaftYIndex)
     {
+        //exeption
         if(argRaftXIndex > MainGameManager.Instance.MaxRaftXSize - 1 ||
            argRaftYIndex > MainGameManager.Instance.MaxRaftYSize - 1 ||
            argRaftXIndex < 0 ||
@@ -240,9 +241,11 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        //get now position raft data
         Raft _raft = MainGameManager.Instance.GetRaft(argRaftXIndex, argRaftYIndex);
         if(_raft.Code > 10000)
         {
+            //set position
             m_playerXPos = argRaftXIndex;
             m_playerYPos = argRaftYIndex;
             transform.position = _raft.gameObject.transform.position;
@@ -251,7 +254,8 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            if(argRaftXIndex == m_selectRaftX && argRaftYIndex == m_selectRaftY)
+            //select empty space or build raft
+            if (argRaftXIndex == m_selectRaftX && argRaftYIndex == m_selectRaftY)
             {
                 BuildRaft();
                 return;
