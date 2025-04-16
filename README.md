@@ -35,3 +35,4 @@ Unity 기반의 생존 시뮬레이션 게임 프로젝트입니다. 플레이�
 - `UserSettings/`: 사용자별 설정 파일들이 저장됩니다.
 
 ## YOUTUBE LINK: https://youtu.be/2sMq8N4R6iw
+## DOCUMENT: https://github.com/vrowdice/GameDocuments
